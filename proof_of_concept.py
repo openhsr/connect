@@ -19,7 +19,7 @@ logger.addHandler(console_handler)
 SMB_USER_ID = input("Username: ")
 SMB_USER_PASSWORD = getpass.getpass()
 SMB_SERVER_IP = '152.96.90.26'
-SMB_SERVER_NAME = ''
+SMB_SERVER_NAME = 'c206.hsr.ch'
 SMB_SHARE_NAME = 'skripte'
 SMB_CLIENT_NAME = socket.gethostname()
 SMB_DOMAIN = 'HSR'
