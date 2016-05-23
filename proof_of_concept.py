@@ -1,7 +1,6 @@
 import os
 import socket
 import logging
-import hashlib
 import json
 import getpass
 
@@ -43,11 +42,9 @@ def sync_tree(connection, source, destination, excludes, cache):
                 os.makedirs(full_local_path)
             sync_tree(connection, full_remote_path, full_local_path, excludes, cache)
         else:
-            m = hashlib.md5()
-            m.update(str(shared_file.file_size).encode('utf-8'))
-            m.update(str(shared_file.last_write_time).encode('utf-8'))
-            m.update(str(shared_file.last_write_time).encode('utf-8'))
-            new_digest = m.hexdigest()
+
+            new_digest = "%s-%s-%s" % (shared_file.file_size, shared_file.last_write_time,
+                                       shared_file.last_write_time)
 
             if full_remote_path in cache and new_digest == cache[full_remote_path]:
                 logger.debug('File %s has not changed' % full_remote_path)
