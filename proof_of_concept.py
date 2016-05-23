@@ -3,6 +3,7 @@ import socket
 import logging
 import hashlib
 import json
+import getpass
 
 from smb.SMBConnection import SMBConnection
 
@@ -15,8 +16,8 @@ console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
 # SMB Data
-SMB_USER_ID = ''
-SMB_USER_PASSWORD = ''
+SMB_USER_ID = input("Username: ")
+SMB_USER_PASSWORD = getpass.getpass()
 SMB_SERVER_IP = '152.96.90.26'
 SMB_SERVER_NAME = ''
 SMB_SHARE_NAME = 'skripte'
@@ -40,7 +41,7 @@ def sync_tree(connection, source, destination, excludes, cache):
             if not os.path.exists(full_local_path):
                 logger.debug('Creating missing directory %s' % full_local_path)
                 os.makedirs(full_local_path)
-            sync_tree(connection, full_remote_path, full_local_path, excludes)
+            sync_tree(connection, full_remote_path, full_local_path, excludes, cache)
         else:
             m = hashlib.md5()
             m.update(str(shared_file.file_size).encode('utf-8'))
@@ -62,9 +63,9 @@ def sync_tree(connection, source, destination, excludes, cache):
 global_exclude = ['.DS_Store', 'Thumbs.db']
 
 # source (leading and tiling slash are optional - both methods work!)
-source = 'Informatik/Fachbereich/Informationssicherheit_1_-_Grundlagen/InfSi1/Admin/'
+source = 'Informatik/Fachbereich/Informationssicherheit_1_-_Grundlagen/InfSi1'
 # Local destination shall not have a tiling slash!
-destination = 'synced/InfSi1/Admin'
+destination = 'synced/InfSi1'
 local_exclude = ['*.exe', 'Archiv']
 
 if not os.path.exists(destination):
