@@ -33,3 +33,7 @@ Options:
 ## Useful Links
 * [How rsync works](https://rsync.samba.org/how-rsync-works.html)
 * [SMB docs...](https://msdn.microsoft.com/en-us/library/ee878573.aspx)
+
+## Lizenz
+
+```open\HSR Connect``` steht unter der [GNU Public License version 3 (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.html). Eine Kopie der Lizenz ist unter LICENSE.txt abgelegt.
