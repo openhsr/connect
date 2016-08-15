@@ -1,4 +1,7 @@
 # open\HSR Connect
+
+WARNUNG: NOCH IST DIESE SOFTWARE IN ENTWICKLUNG - ALSO NICHT FÜR DEN PRODUKTIVEN EINSATZ GEEIGNET!
+
 Besser als der HSR Mapper ;)
 
 ## Requirements
@@ -6,7 +9,9 @@ Besser als der HSR Mapper ;)
 * python3
 * `sudo pip3 install -r requirements.txt`
 
-## CLI
+## CLI Entwurf
+
+(noch nicht funktionsbereit)
 
 ```
 Usage:
