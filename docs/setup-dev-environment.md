@@ -23,7 +23,7 @@ $ pep8 openhsr_connect/ tests/
 
 ```bash
 cd path/to/my/projects
-git clone git@github.com:openhsr/connect.git
+git clone https://github.com/openhsr/connect.git
 ```
 
 ## virtualenv einrichten
@@ -65,7 +65,7 @@ $ pip3 install -r requirements-dev.txt
 ```
 
 Um sowohl die Tests auszuführen, als auch die Kommandozeile testen zu können, muss das `openhsr_connect` Paket installiert werden:
-
+o   
 ```bash
 $ pip install --editable .
 ```
