@@ -1,7 +1,49 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from openhsr_connect.print import process
+import sys
+import json
+import socket
+import base64
+
+
+def main():
+    # Print "device discovery" if called with no arguments
+    if len(sys.argv) == 1:
+        print('direct hsr-email-print "Unknown" "Print at HSR"')
+        sys.exit(0)
+
+    # Script must be alled with exactly 5 or 6 arguments
+    if len(sys.argv) not in (5, 6):
+        print('ERROR:Wrong number of arguments %s!' % sys.argv, file=sys.stderr)
+        sys.exit(1)
+
+    # Read the data from the given file or stdin in memory
+    raw = None
+    if len(sys.argv) == 7:
+        # if a file is given
+        with open(sys.argv[6], 'rb') as f:
+            raw = f.read()
+    else:
+        # read input from stdin
+        raw = sys.stdin.buffer.read()
+
+    # Fill up a json object to send to the user deamon
+    data = {'version': 1}
+    data['id'] = sys.argv[1]
+    data['user'] = sys.argv[2]
+    data['title'] = sys.argv[3]
+    data['number-of-copies'] = sys.argv[4]
+    data['options'] = sys.argv[5]
+    data['data'] = base64.b64encode(raw)
+
+    # connect to the user deamon and send a utf-8 binary stream with the json object
+    # the deamon will handle further printing work.
+    # TODO: Adapt path
+    filesocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    filesocket.connect('???/%s' % data['user'])
+    filesocket.sendall(json.dumps(data).encode('utf-8'))
+    filesocket.close()
 
 if __name__ == '__main__':
-    process()
+    main()
