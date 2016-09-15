@@ -29,14 +29,10 @@ git clone https://github.com/openhsr/connect.git
 ## virtualenv einrichten
 Ein Virtualenv ist eine isolierte Python-Umgebung, damit wir bei der Entwicklung keine Konflikte mit global installierten Paketen haben.
 
-```bash
-$ sudo pip3 install virtualenv
-```
-
-Wenn virtualenv installiert ist, müssen wir ein neue solche virtuelle Umgebung erstellen:
+Dazu müssen wir eine neue solche virtuelle Umgebung erstellen:
 
 ```bash
-$ virtualenv -p python3.5 venv/
+$ python3 -m venv venv
 ```
 
 Damit ist die einmalige Einrichtung abgeschlossen. Um das virtualenv zu aktivieren, muss folgendes Kommando ausgeführt werden, bevor man damit beginnt, am Projekt zu arbeiten.
