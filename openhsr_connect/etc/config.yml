@@ -1,0 +1,5 @@
+#sync
+--local-changes: ask
+--remote-deleted: ask
+#print
+<printer_name>: hsrprinter
