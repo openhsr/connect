@@ -64,7 +64,7 @@ $ pip3 install -r requirements.txt
 $ pip3 install -r requirements-dev.txt
 ```
 
-Um sowohl die Tests auszuführen, als auch die Kommandozeile testen zu können, muss das `openhsr_connect` Paket installiert werden:
+Um sowohl die Tests auszuführen, als auch die Kommandozeile testen zu können, muss das `openhsr-connect` Paket installiert werden:
 o   
 ```bash
 $ pip install --editable .

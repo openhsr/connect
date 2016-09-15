@@ -5,6 +5,7 @@ import sys
 import json
 import socket
 import base64
+from pwd import getpwnam
 
 
 def main():
@@ -41,7 +42,8 @@ def main():
     # the deamon will handle further printing work.
     # TODO: Adapt path
     filesocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    filesocket.connect('???/%s' % data['user'])
+    user_id = getpwnam(data['user']).pw_uid
+    filesocket.connect('/var/run/user/%s/openhsr-connect.sock' % user_id)
     filesocket.sendall(json.dumps(data).encode('utf-8'))
     filesocket.close()
 
