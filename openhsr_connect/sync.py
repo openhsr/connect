@@ -106,8 +106,11 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
             with open(full_local_path, 'wb') as local_file:
                 connection.retrieveFile(SMB_SHARE_NAME, full_remote_path, local_file)
                 cache[filename] = new_digest
-                logger.debug('digest: %s' % new_digest)
                 logger.debug('Downloading of file %s complete!' % full_remote_path)
+
+            # set last write time to that of the remote file
+            os.utime(full_local_path,
+                    (shared_file.last_access_time, shared_file.last_write_time))
 
 
 config = read_config()
