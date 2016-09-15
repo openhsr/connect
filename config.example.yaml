@@ -8,6 +8,10 @@ sync:
     - .DS_Store
     - Thumbs.db
 
+conflict_handling:
+    local-changes: keep
+    remote-deleted: delete
+
   repositories: # sync-units
     InfSi1:
       remote_dir: Informatik/Fachbereich/Informationssicherheit_1_-_Grundlagen/InfSi1
