@@ -9,7 +9,7 @@ sync:
     - Thumbs.db
 
   conflict_handling:
-    local-changes: keep # ask | keep | overwrite | addfiles
+    local-changes: keep # ask | keep | overwrite | makeCopy
     remote-deleted: delete # delete | keep
 
   repositories: # sync-units

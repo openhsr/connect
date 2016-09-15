@@ -74,16 +74,43 @@ def exclude_file(path, filename, excludes):
     return False
 
 
+def file_differs(filepath, remote_digest):
+    local_digest = "%s-%s" % (
+        os.path.getsize(filepath), os.path.getmtime(filepath))
+    return not remote_digest == local_digest
+
+
+def ask_for_overwrite(path):
+    while True:
+        choice = input(
+            "Do you want to overwrite %s with the new version? (y/N)" % path)
+        choice = choice.lower()
+        if choice == '' or choice == 'n':
+            return False
+        elif choice == 'y':
+            return True
+
+
+def remove_tree(filepath):
+    if os.path.isfile(filepath):
+        os.remove(filepath)
+    else:
+        for subfile in os.listdir(filepath):
+            remove_tree(subfile)
+
+
 def sync_tree(connection, source, destination, rel_path, excludes, cache):
+    fileset = set(cache)
     remote_path = os.path.join(source, rel_path)
     for shared_file in connection.listPath(SMB_SHARE_NAME, remote_path):
         filename = shared_file.filename
-        full_remote_path = os.path.join(remote_path, filename)
+        fileset.discard(filename)
+        relative_remote_path = os.path.join(rel_path, filename)
         full_local_path = os.path.join(destination, rel_path, filename)
         if filename == '.' or filename == '..':
             continue
         elif exclude_file(rel_path, filename, excludes):
-            logger.debug('Skipping ignored file: %s' % full_remote_path)
+            logger.debug('Skipping ignored file: %s' % relative_remote_path)
             continue
         elif shared_file.isDirectory:
             if not os.path.exists(full_local_path):
@@ -96,21 +123,47 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
                 connection, source, destination,
                 os.path.join(rel_path, filename), excludes, cache[filename])
         else:
-            new_digest = "%s-%s" % (shared_file.file_size,
+            remote_digest = "%s-%s" % (shared_file.file_size,
                                     shared_file.last_write_time)
-            if filename in cache and new_digest == cache[filename]:
-                logger.debug('File %s has not changed' % full_remote_path)
-                continue
-
+            if os.path.exists(full_local_path) and filename in cache:
+                if remote_digest == cache[filename]:
+                    logger.debug('File %s has not changed' % relative_remote_path)
+                    continue
+                if file_differs(full_local_path, cache[filename]):
+                    # file changed locally
+                    logger.debug('File %s has changed locally' % relative_remote_path)
+                    conflict_handling = config['conflict_handling']['local_changes']
+                    if conflict_handling == 'keep':
+                        continue
+                    elif conflict_handling == 'ask':
+                        if not ask_for_overwrite(relative_remote_path):
+                            continue
+                    elif conflict_handling == 'overwrite':
+                        logger.info("File %s will be overwritten" % relative_remote_path)
+                    elif conflict_handling == 'makeCopy':
+                        # TODO: Create conflict file
+                        pass
+            
+            full_remote_path = os.path.join(remote_path, filename)
             logger.debug('Downloading file %s' % full_remote_path)
             with open(full_local_path, 'wb') as local_file:
                 connection.retrieveFile(SMB_SHARE_NAME, full_remote_path, local_file)
-                cache[filename] = new_digest
+                cache[filename] = remote_digest
                 logger.debug('Downloading of file %s complete!' % full_remote_path)
 
             # set last write time to that of the remote file
             os.utime(full_local_path,
                     (shared_file.last_access_time, shared_file.last_write_time))
+
+    if fileset:  # if fileset not empty, remote files have been deleted
+        for filename in fileset:
+            del cache[filename]
+            full_path = os.path.join(destination, rel_path, filename)
+            logger.debug('File %s has been deleted on remote' % filename)
+            # TODO: Ask Option
+            if config['conflict_handling']['remote-deleted'] == 'delete':
+                logger.debug('File %s will be removed' % filename)
+                remove_tree(full_path)
 
 
 config = read_config()
