@@ -77,31 +77,35 @@ def exclude_file(path, filename, excludes):
 def sync_tree(connection, source, destination, rel_path, excludes, cache):
     remote_path = os.path.join(source, rel_path)
     for shared_file in connection.listPath(SMB_SHARE_NAME, remote_path):
-        full_remote_path = os.path.join(remote_path, shared_file.filename)
-        full_local_path = os.path.join(destination, rel_path, shared_file.filename)
-        if shared_file.filename == '.' or shared_file.filename == '..':
+        filename = shared_file.filename
+        full_remote_path = os.path.join(remote_path, filename)
+        full_local_path = os.path.join(destination, rel_path, filename)
+        if filename == '.' or filename == '..':
             continue
-        elif exclude_file(rel_path, shared_file.filename, excludes):
+        elif exclude_file(rel_path, filename, excludes):
             logger.debug('Skipping ignored file: %s' % full_remote_path)
             continue
         elif shared_file.isDirectory:
             if not os.path.exists(full_local_path):
                 logger.debug('Creating missing directory %s' % full_local_path)
                 os.makedirs(full_local_path)
+            
+            if filename not in cache:
+                cache[filename] = {}
             sync_tree(
                 connection, source, destination,
-                os.path.join(rel_path, shared_file.filename), excludes, cache)
+                os.path.join(rel_path, filename), excludes, cache[filename])
         else:
             new_digest = "%s-%s" % (shared_file.file_size,
                                     shared_file.last_write_time)
-            if full_remote_path in cache and new_digest == cache[full_remote_path]:
+            if filename in cache and new_digest == cache[filename]:
                 logger.debug('File %s has not changed' % full_remote_path)
                 continue
 
             logger.debug('Downloading file %s' % full_remote_path)
             with open(full_local_path, 'wb') as local_file:
                 connection.retrieveFile(SMB_SHARE_NAME, full_remote_path, local_file)
-                cache[full_remote_path] = new_digest
+                cache[filename] = new_digest
                 logger.debug('digest: %s' % new_digest)
                 logger.debug('Downloading of file %s complete!' % full_remote_path)
 
