@@ -1,9 +1,9 @@
-#! /usr/bin/env python3
-# -*- coding: utf-8 -*-
-#
 import sys
 import os
 import smtplib
+import base64
+from subprocess import Popen, PIPE, STDOUT
+import logging
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
@@ -11,89 +11,90 @@ from email.mime.text import MIMEText
 from email import encoders
 from .exceptions import PrintException
 
-# TODO: Load from CFG
-sender = 'raphael.zimmermann@hsr.ch'
-
 # These values are hard-coded to be updated easily in case of a change in the HSR infrastructure.
 reciever = 'mobileprint@hsr.ch'
 smtp_server = 'smtp.hsr.ch'
 
+logger = logging.getLogger('openhsr_connect.print')
 
-def create_pdf(full_path):
+
+def send_to_printer(data):
+    """
+        This method shall be called by the cups backend backend.
+        As input, the "data" object sent from the cups backend is expected
+
+        This method can throw a PrintException that must be caughted by the daemon.
+    """
+    # TODO: Load from CFG
+    sender = 'raphael.zimmermann@hsr.ch'
+    password = '***'
+
+    file_name = 'hsr-email-print-%s-%s.pdf' % (data['id'], data['user'])
+    full_path = os.path.join(data['directory'], file_name)
+
+    create_pdf(full_path, data)
+    send_email(full_path, sender, password)
+
+    # Remove PDF file when sent
+    os.remove(full_path)
+
+
+def create_pdf(full_path, data):
     """
         Creates a PDF from the given stdin into a file at full_path.
         If the conversion fails, an error is logged to stderr and the program quits with
         exit code 1.
     """
 
-    command = ('gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 '
-               '-sPAPERSIZE=a4 -dPDFSETTINGS=/printer -sOutputFile=%s -c save pop -f'
-               ' - &> /dev/null' % full_path)
+    raw = base64.b64decode(data['data'])
 
-    fpipe = os.popen(command)
-    ret_code = fpipe.close()
+    command = ['gs', '-q', '-dNOPAUSE', '-dBATCH', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
+               '-sPAPERSIZE=a4', '-dPDFSETTINGS=/printer', '-sOutputFile=%s' % full_path,
+               '-c', 'save', 'pop', '-f', '-']
 
-    if ret_code is not None:
-        print('ERROR: Failed to convert - return code was %s ' % ret_code, file=sys.stderr)
-        sys.exit(1)
+    # Pipe the raw postscript data into gs
+    p = Popen(command, stdout=PIPE, stdin=PIPE, stderr=PIPE)
+    stdout_data = p.communicate(input=raw)[0].decode('utf-8')
+
+    # Verify exit code and output
+    if p.returncode != 0 or len(stdout_data) > 0:
+        logger.error('Failed to convert - return code was %s, output: \n%s ' %
+                     (p.returncode, stdout_data))
+        raise PrintException('PDF conversion failed')
 
 
-def send_email(full_path):
+def send_email(full_path, sender, password):
     """
     Sends the created pdf file as an email attachment. If an error has
     occured in the PDF creation process, it just sends a failure notice.
     """
 
-    # Create the container (outer) email message.
-    outer = MIMEMultipart()
-    outer['Subject'] = 'PDF Print Request'
-    outer['From'] = sender
-    outer['To'] = reciever
-    outer.preamble = 'PDF print request'
+    try:
+        # Create the container (outer) email message.
+        outer = MIMEMultipart()
+        outer['Subject'] = 'PDF Print Request'
+        outer['From'] = sender
+        outer['To'] = reciever
+        outer.preamble = 'PDF print request'
 
-    msg = MIMEText('Print the attachment, please!\n\r', 'plain', 'utf-8')
-    outer.attach(msg)
+        msg = MIMEText('Print the attachment, please!\n\r', 'plain', 'utf-8')
+        outer.attach(msg)
 
-    # PDF ATTACHMENT PART
-    fp = open(full_path, 'rb')
-    msg = MIMEBase('application', 'pdf')
-    msg.set_payload(fp.read())
-    fp.close()
-    encoders.encode_base64(msg)
-    msg.add_header('Content-Disposition', 'attachment', filename=os.path.basename(full_path))
-    outer.attach(msg)
+        # PDF attachment part
+        fp = open(full_path, 'rb')
+        msg = MIMEBase('application', 'pdf')
+        msg.set_payload(fp.read())
+        fp.close()
+        encoders.encode_base64(msg)
+        msg.add_header('Content-Disposition', 'attachment', filename=os.path.basename(full_path))
+        outer.attach(msg)
 
-    # Send the email via an SMTP server.
-    s = smtplib.SMTP(smtp_server)
-    s.starttls()
-    # TODO: Authenticate in the future
-    s.sendmail(sender, reciever, outer.as_string())
-    s.quit()
-
-
-def process():
-    """
-        This method shall be called by the cups backend backend.
-    """
-
-    # Print "device discovery" if called with no arguments
-    if len(sys.argv) == 1:
-        print('direct hsr-email-print "Unknown" "Print at HSR"')
-        sys.exit(0)
-
-    # Script must be alled with exactly 5 or 6 arguments
-    if len(sys.argv) not in (5, 6):
-        print('ERROR:Wrong number of arguments %s!' % sys.argv, file=sys.stderr)
-        sys.exit(1)
-
-    directory = os.environ['DEVICE_URI'].split(':')[1].strip()
-    if not os.access(directory, os.W_OK):
-        print('ERROR: No permission to write in %s!' % directory, file=sys.stderr)
-        sys.exit(1)
-
-    file_name = 'hsr-email-print-%s-%s.pdf' % (sys.argv[1], sys.argv[2])
-    full_path = os.path.join(directory, file_name)
-
-    # TODO: Input COULD also come via argv[6]?
-    create_pdf(full_path)
-    send_email(full_path)
+        # Send the email via an SMTP server.
+        s = smtplib.SMTP(smtp_server)
+        s.starttls()
+        smtp.login(sender, password)
+        s.sendmail(sender, reciever, outer.as_string())
+        logger.info('E-Mail to %s sent!' % reciever)
+        s.quit()
+    except Exception as e:
+        raise PrintException(e)

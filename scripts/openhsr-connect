@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os
 import json
 import socket
 import base64
@@ -17,6 +18,11 @@ def main():
     # Script must be alled with exactly 5 or 6 arguments
     if len(sys.argv) not in (5, 6):
         print('ERROR:Wrong number of arguments %s!' % sys.argv, file=sys.stderr)
+        sys.exit(1)
+
+    directory = os.environ['DEVICE_URI'].split(':')[1].strip()
+    if not os.access(directory, os.W_OK):
+        print('ERROR: No permission to write in %s!' % directory, file=sys.stderr)
         sys.exit(1)
 
     # Read the data from the given file or stdin in memory
@@ -36,6 +42,7 @@ def main():
     data['title'] = sys.argv[3]
     data['number-of-copies'] = sys.argv[4]
     data['options'] = sys.argv[5]
+    data['directory'] = directory
     data['data'] = base64.b64encode(raw)
 
     # connect to the user deamon and send a utf-8 binary stream with the json object
