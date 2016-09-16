@@ -15,7 +15,7 @@ def main():
         print('direct hsr-email-print "Unknown" "Print at HSR"')
         sys.exit(0)
 
-    # Script must be alled with exactly 5 or 6 arguments
+    # Script must be alled with exactly 6 or 7 arguments
     if len(sys.argv) not in (6, 7):
         print('ERROR:Wrong number of arguments %s!' % sys.argv, file=sys.stderr)
         sys.exit(1)
