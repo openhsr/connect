@@ -29,11 +29,11 @@ def send_to_printer(config, password, data):
     This method can throw a PrintException that must be caughted by the daemon.
     """
 
-    file_name = 'hsr-email-print-%s-%s.pdf' % (data['id'], data['user'])
+    file_name = 'openhsr-connect-%s-%s.pdf' % (data['id'], data['user'])
     full_path = os.path.join(data['directory'], file_name)
 
     create_pdf(full_path, data)
-    send_email(full_path, config['email'], password)
+    send_email(full_path, config['login']['email'], config['login']['username'], password)
 
     # Remove PDF file when sent
     os.remove(full_path)
@@ -63,7 +63,7 @@ def create_pdf(full_path, data):
         raise PrintException('PDF conversion failed')
 
 
-def send_email(full_path, sender, password):
+def send_email(full_path, sender, user,  password):
     """
     Sends the created pdf file as an email attachment. If an error has
     occured in the PDF creation process, it just sends a failure notice.
@@ -92,7 +92,7 @@ def send_email(full_path, sender, password):
         # Send the email via an SMTP server.
         s = smtplib.SMTP(smtp_server)
         s.starttls()
-        s.login(sender, password)
+        s.login(user, password)
         s.sendmail(sender, reciever, outer.as_string())
         logger.info('E-Mail to %s sent!' % reciever)
         s.quit()

@@ -32,10 +32,10 @@ def create_socket():
     while True:
         conn, addr = filesocket.accept()
         data = read_data(conn)
-
+        logger.debug('Recieving document...')
         try:
             config = configuration.load_config(raise_if_incomplete=True)
-            password = config.get_password(config)
+            password = configuration.get_password(config)
             printing.send_to_printer(config, password, data)
         except PrintException as e:
             logger.error('Exception occured during send_to_printer: \n%s ' % e)
@@ -52,7 +52,6 @@ def read_data(conn):
     while True:
         bufsize = 1024
         temp = conn.recv(bufsize)
-        print(temp)
         binary += temp
         if (len(temp) < bufsize):
             break
