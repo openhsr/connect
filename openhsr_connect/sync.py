@@ -99,7 +99,7 @@ def ask_question(question):
 
 
 def download_file(connection, remote, local):
-    logger.debug('Downloading file %s' % remote)
+    logger.info('Downloading file %s' % remote)
     with open(local, 'wb') as local_file:
         connection.retrieveFile(SMB_SHARE_NAME, remote, local_file)
         logger.debug('Downloading of file %s complete!' % remote)
