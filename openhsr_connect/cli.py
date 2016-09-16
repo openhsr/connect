@@ -1,8 +1,8 @@
 """openhsr-connect
 Usage:
   openhsr-connect sync [--local-changes=(ask|overwrite|keep|makeCopy)]
-      [--remote-deleted=(ask|delete|keep)] [repository]
-  openhsr-connect daemon [-d | --daemonize]
+      [--remote-deleted=(ask|delete|keep)] [-q | -v]
+  openhsr-connect daemon [-d | --daemonize] [-q | -v]
   openhsr-connect help
   openhsr-connect -h | --help
   openhsr-connect --version
@@ -33,35 +33,42 @@ import os
 import jsonschema
 import webbrowser
 import sys
+import logging
+from .exceptions import ConnectException
 from . import configuration
 from . import user_daemon
 from . import sync
 from . import __VERSION__
 
+logger = logging.getLogger('openhsr_connect')
 
 def main():
     # TODO: implement "update-password" command
-    # TODO: setup logging according to -v od -q
-    # -v = DEBUG
-    # -q = ERROR
     try:
         arguments = docopt(__doc__, version='openhsr-connect %s' % __VERSION__)
-        config = configuration.load_config()
+        logger.warning('WARNUNG: NOCH IST DIESE SOFTWARE IN ENTWICKLUNG - ALSO NICHT FÜR'
+                       'DEN PRODUKTIVEN EINSATZ GEEIGNET!')
+        if arguments['--verbose']:
+            logger.setLevel(logging.DEBUG)
+        if arguments['--quiet']:
+            logger.setLevel(logging.WARNING)
 
-        # print(arguments)
+        config = configuration.load_config()
+        logging.debug('debug stuff...')
+
         if arguments['help']:
             webbrowser.open('https://github.com/openhsr/connect/tree/master/docs')
         if arguments['sync']:
             if arguments['--local-changes']:
                 if arguments['--local-changes'] not in ['ask', 'delete', 'keep']:
-                    print('%s is not a valid value for local-changes'
-                          % arguments['--local-changes'], file=sys.stderr)
+                    logger.error('%s is not a valid value for local-changes'
+                                 % arguments['--local-changes'])
                     sys.exit(1)
                 config['sync']['conflict_handling']['local-changes'] = arguments['--local-changes']
             if arguments['--remote-deleted']:
                 if arguments['--remote-deleted'] not in ['ask', 'keep', 'overwrite', 'makeCopy']:
-                    print('%s is not a valid value for remote-deleted'
-                          % arguments['--remote-deleted'], file=sys.stderr)
+                    logger.error('%s is not a valid value for remote-deleted'
+                                 % arguments['--remote-deleted'], file=sys.stderr)
                     sys.exit(1)
                 config['sync']['conflict_handling']['remote-deleted'] = arguments['--remote-deleted']
             sync.sync(config)
@@ -70,7 +77,7 @@ def main():
                 try:
                     pid = os.fork()
                     if pid > 0:
-                        print('Forked to background!')
+                        logger.info('Forked to background!')
                         sys.exit(0)
                 except OSError as e:
                         sys.stderr.write("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror), file=sys.stderr)
@@ -78,13 +85,15 @@ def main():
             user_daemon.create_socket()
 
     except jsonschema.exceptions.ValidationError as e:
-        print('Your configuration file is invalid:', file=sys.stderr)
-        print(e.message, file=sys.stderr)
+        logger.error('Your configuration file is invalid:')
+        logger.error(e.message)
         sys.exit(1)
+    except ConnectException as e:
+        logger.error(e)
     except Exception as e:
         traceback.print_exc()
-        print('\n\nopenhsr-connect has crashed :(', file=sys.stderr)
-        print('Please report at https://github.com/openhsr/connect/issues/', file=sys.stderr)
+        logger.error('\n\nopenhsr-connect has crashed :(', file=sys.stderr)
+        logger.error('Please report at https://github.com/openhsr/connect/issues/', file=sys.stderr)
         sys.exit(1)
 
 if __name__ == '__main__':
