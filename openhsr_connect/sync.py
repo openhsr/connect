@@ -8,6 +8,7 @@ import fnmatch
 import getpass  # used until password management is implemented
 
 from smb.SMBConnection import SMBConnection
+from smb.smb_structs import ProtocolError
 
 CONFIG_FILE = '../config.example.yaml'
 
@@ -36,9 +37,13 @@ def smb_login():
         username, password, SMB_CLIENT_NAME,
         SMB_SERVER_NAME, domain=SMB_DOMAIN, use_ntlm_v2=False)
     # TODO: Proper exception handling
-    assert connection.connect(SMB_SERVER_IP, SMB_SERVER_PORT)
-    logger.info('Connection successful!')
-    return connection
+    connect_result = False
+    try:
+        connect_result = connection.connect(SMB_SERVER_IP, SMB_SERVER_PORT)
+    except ProtocolError as e:
+        logger.debug('ProtocolException: %s' % e)
+    finally:
+        return connect_result, connection
 
 
 def read_config():
@@ -202,7 +207,11 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
 
 
 def sync(config):
-    connection = smb_login()
+    connect_result, connection = smb_login()
+    if connect_result is False:
+        logger.error("Login failed!")
+        return
+    logger.info('Connection successful!')
     for name, repository in config['repositories'].items():
         source = repository['remote_dir']
         destination = repository['local_dir']
