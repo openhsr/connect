@@ -1,0 +1,20 @@
+login:
+  username: mmuster
+  email: maria.muster@hsr.ch
+
+sync:
+  global-exclude:
+    - .DS_Store
+    - Thumbs.db
+
+  conflict-handling:
+    local-changes: ask
+    remote-deleted: ask
+
+  repositories:
+    InfSi1:
+      remote-dir: Informatik/Fachbereich/Informationssicherheit_1_-_Grundlagen/InfSi1
+      local-dir: synced/InfSi1
+      exclude:
+        - '*.exe'
+        - 'Archiv'
