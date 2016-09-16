@@ -2,6 +2,7 @@ import yaml
 import os
 import logging
 import getpass
+import keyring
 from .exceptions import PasswordException
 
 
@@ -25,6 +26,10 @@ sync:
 
 
 def create_default_config(config_path):
+    """
+    Creates the a default configuration file.
+    Prompts for input (username and mail)
+    """
     logger.info('Creating default configuration')
     username = input('Dein HSR-Benutzername: ')
     mail = input('Deine HSR-Email (VORNAME.NACHNAME@hsr.ch): ')
@@ -34,6 +39,9 @@ def create_default_config(config_path):
 
 
 def load_config():
+    """
+    Loads the user configuration and creates the default configuration if it does not yet exist.
+    """
     config_path = os.path.expanduser('~/.config/openhsr-connect.yaml')
 
     # create default config if it does not yet exist
@@ -46,12 +54,12 @@ def load_config():
 
     # Verify if the password is in the keyring
     try:
-        get_password()
+        get_password(configuration)
     except PasswordException as e:
         password = getpass.getpass('Dein HSR-Kennwort (wird sicher im Keyring gespeichert): ')
         keyring.set_password('openhsr-connect', configuration['login']['username'], password)
 
-    # TODO: validate
+    # TODO: validate the configuration (JSON SCHEMA)
 
 
 def get_password(configuration):

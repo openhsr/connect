@@ -1,3 +1,4 @@
 pysmb==1.1.18
 docopt
 pyyaml
+keyring
