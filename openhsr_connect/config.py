@@ -24,7 +24,7 @@ sync:
     remote-deleted: delete # delete | keep
 """
 
-schema = {
+SCHEMA = {
     'title': 'open\HSR Connect configuration Schema',
     'type': 'object',
     'properties': {
@@ -36,7 +36,7 @@ schema = {
                 },
                 'email': {
                     'type': 'string',
-                    "pattern": "^[a-zA-Z0-9]+\.[a-zA-Z0-9]+\@hsr.ch$"
+                    'pattern': '^[a-zA-Z0-9]+\.[a-zA-Z0-9]+\@hsr.ch$'
                 }
             },
             'required': ['username', 'email']
@@ -46,40 +46,39 @@ schema = {
             'properties': {
                 'global_exclude': {
                     'type': 'array',
-                    "items": {"type": "string"},
+                    'items': {'type': 'string'},
                 },
                 'conflict_handling': {
                     'type': 'object',
                     'properties': {
-                        "local-changes": {
-                            "type": "string",
-                            "pattern": '^(ask|keep|overwrite|makeCopy)$'
+                        'local-changes': {
+                            'type': 'string',
+                            'pattern': '^(ask|keep|overwrite|makeCopy)$'
                         },
-                        "remote-deleted": {
-                            "type": "string",
-                            "pattern": '^(delete|keep)$'
+                        'remote-deleted': {
+                            'type': 'string',
+                            'pattern': '^(delete|keep)$'
                         }
                     },
                     'additionalProperties': False
                 },
                 'repositories': {
                     'type': 'object',
-                    "patternProperties": {
+                    'patternProperties': {
                         '^[^\/*&%\s]+$': {
                             'type': 'object',
-                            # 'properties': {
-                            #
-                            # }
+                            'properties': {
+                                'remote_dir': {'type': 'string'},
+                                'local_dir': {'type': 'string'},
+                                'exclude': {
+                                    'type': 'array',
+                                    'items': {'type': 'string'},
+                                }
+                            },
+                            'required': ['remote_dir', 'local_dir']
                         }
                     },
                     'additionalProperties': False
-                    #
-                    # InfSi1:
-                    #   remote_dir: Informatik/Fachbereich/Informationssicherheit_1_-_Grundlagen/InfSi1
-                    #   local_dir: synced/InfSi1
-                    #   exclude:
-                    #     - '*.exe'
-                    #     - 'Archiv'
                 }
             },
             'additionalProperties': False
@@ -125,7 +124,7 @@ def load_config():
         keyring.set_password('openhsr-connect', configuration['login']['username'], password)
 
     # Validate the configuration
-    jsonschema.validate(configuration, schema)
+    jsonschema.validate(configuration, SCHEMA)
 
     # if "global_exclude" is not (fully) declared:
     if 'global_exclude' not in configuration['sync']:
@@ -143,7 +142,11 @@ def load_config():
     if 'repositories' not in configuration['sync']:
         configuration['sync']['repositories'] = {}
 
+    for name, repository in configuration['sync']['repositories'].items():
+        if 'exclude' not in repository:
+            repository['exclude'] = []
     return configuration
+
 
 def get_password(configuration):
     """
