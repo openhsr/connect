@@ -58,6 +58,8 @@ def main():
 
         if arguments['help']:
             webbrowser.open('https://github.com/openhsr/connect/tree/master/docs')
+        if arguments['update-password']:
+            configuration.set_password(config)
         if arguments['sync']:
             if arguments['--local-changes']:
                 if arguments['--local-changes'] not in ['ask', 'delete', 'keep']:
@@ -90,10 +92,11 @@ def main():
         sys.exit(1)
     except ConnectException as e:
         logger.error(e)
+        sys.exit(1)
     except Exception as e:
         traceback.print_exc()
-        logger.error('\n\nopenhsr-connect has crashed :(', file=sys.stderr)
-        logger.error('Please report at https://github.com/openhsr/connect/issues/', file=sys.stderr)
+        logger.error('\n\nopenhsr-connect has crashed :(')
+        logger.error('Please report at https://github.com/openhsr/connect/issues/')
         sys.exit(1)
 
 if __name__ == '__main__':
