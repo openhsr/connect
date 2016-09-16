@@ -15,11 +15,11 @@ login:
   email: {mail}
 
 sync:
-  global_exclude:
+  global-exclude:
     - .DS_Store
     - Thumbs.db
 
-  conflict_handling:
+  conflict-handling:
     local-changes: ask # ask | keep | overwrite | makeCopy
     remote-deleted: ask # ask | delete | keep
 """
@@ -44,11 +44,11 @@ SCHEMA = {
         'sync': {
             'type': 'object',
             'properties': {
-                'global_exclude': {
+                'global-exclude': {
                     'type': 'array',
                     'items': {'type': 'string'},
                 },
-                'conflict_handling': {
+                'conflict-handling': {
                     'type': 'object',
                     'properties': {
                         'local-changes': {
@@ -68,14 +68,14 @@ SCHEMA = {
                         '^[^\/*&%\s]+$': {
                             'type': 'object',
                             'properties': {
-                                'remote_dir': {'type': 'string'},
-                                'local_dir': {'type': 'string'},
+                                'remote-dir': {'type': 'string'},
+                                'local-dir': {'type': 'string'},
                                 'exclude': {
                                     'type': 'array',
                                     'items': {'type': 'string'},
                                 }
                             },
-                            'required': ['remote_dir', 'local_dir']
+                            'required': ['remote-dir', 'local-dir']
                         }
                     },
                     'additionalProperties': False
