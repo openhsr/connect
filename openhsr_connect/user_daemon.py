@@ -36,7 +36,7 @@ def create_socket():
         try:
             configuration = config.load_config(raise_if_incomplete=True)
             password = config.get_password(configuration)
-            printing.send_to_printer(configuration, password, ata)
+            printing.send_to_printer(configuration, password, data)
         except PrintException as e:
             logger.error('Exception occured during send_to_printer: \n%s ' % e)
 
