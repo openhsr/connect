@@ -31,11 +31,10 @@ def smb_login(username):
         if connect_result is False:
             raise ProtocolError("SMB Connection failure")
     except ProtocolError as e:
-        logger.debug("Exception when connecting to %s: %s" % SMB_SERVER_NAME, e)
+        logger.debug("Exception when connecting to %s: %s" % (SMB_SERVER_NAME, e))
         raise exceptions.ConnectException(
             "Could not connect to %s, wrong password?" % SMB_SERVER_NAME)
-
-    logger.debug('SMB Connection to %s successful!', SMB_SERVER_NAME)
+    logger.debug('SMB Connection to %s successful!' % SMB_SERVER_NAME)
     return connection
 
 
@@ -195,7 +194,10 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache, config
 
 def sync(config):
     connection = smb_login(config['login']['username'])
-    for name, repository in config['sync']['repositories'].items():
+    repositories = config['sync']['repositories']
+    if not repositories:
+        logger.info("No repositories in config")
+    for name, repository in repositories.items():
         source = repository['remote_dir']
         destination = repository['local_dir']
         if not os.path.exists(destination):
