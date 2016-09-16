@@ -21,7 +21,8 @@ SMB_SERVER_PORT = 445
 logger = logging.getLogger('openhsr_connect.config')
 
 
-def smb_login(username):
+def smb_login(login_config):
+    username = login_config['username']
     password = connect_config.get_password(config)
     connection = SMBConnection(
         username, password, SMB_CLIENT_NAME,
@@ -193,7 +194,7 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache, config
 
 
 def sync(config):
-    connection = smb_login(config['login']['username'])
+    connection = smb_login(config['login'])
     repositories = config['sync']['repositories']
     if not repositories:
         logger.info("No repositories in config")
