@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 import socket
 import logging
 import json
@@ -80,10 +81,26 @@ def file_differs(filepath, remote_digest):
     return not remote_digest == local_digest
 
 
-def ask_for_overwrite(path):
+def handle_local_change(full_local_path, rel_remote_path):
+    logger.debug('File %s has changed locally' % rel_remote_path)
+    conflict_handling = config['conflict_handling']['local-changes']
+    if conflict_handling == 'keep':
+        return 'skip'
+    elif conflict_handling == 'ask':
+        question = "Do you want to overwrite %s with the new version?" % rel_remote_path
+        if not ask_question(question):
+            # TODO: Don't ask again for this file next time the sync is run
+            return 'skip'
+        logger.debug("File %s will be overwritten" % rel_remote_path)
+    elif conflict_handling == 'overwrite':
+        logger.info("File %s will be overwritten" % rel_remote_path)
+    elif conflict_handling == 'makeCopy':
+        rename_file(full_local_path)
+
+
+def ask_question(question):
     while True:
-        choice = input(
-            "Do you want to overwrite %s with the new version? (y/N)" % path)
+        choice = input("%s (y/N)" % question)
         choice = choice.lower()
         if choice == '' or choice == 'n':
             return False
@@ -91,12 +108,28 @@ def ask_for_overwrite(path):
             return True
 
 
+def download_file(connection, remote, local):
+    logger.debug('Downloading file %s' % remote)
+    with open(local, 'wb') as local_file:
+        connection.retrieveFile(SMB_SHARE_NAME, remote, local_file)
+        logger.debug('Downloading of file %s complete!' % remote)
+
+
+def rename_file(path):
+    date = datetime.now().strftime("%y%m%d%H%M")
+    filename, extension = os.path.splitext(path)
+    new_path = "%s-local-%s%s" % (filename, date, extension)
+    logger.debug("Rename local file %s to %s" % (path, new_path))
+    os.rename(path, new_path)
+
+
 def remove_tree(filepath):
     if os.path.isfile(filepath):
         os.remove(filepath)
     else:
         for subfile in os.listdir(filepath):
-            remove_tree(subfile)
+            remove_tree(os.path.join(filepath, subfile))
+        os.removedirs(filepath)
 
 
 def sync_tree(connection, source, destination, rel_path, excludes, cache):
@@ -116,7 +149,7 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
             if not os.path.exists(full_local_path):
                 logger.debug('Creating missing directory %s' % full_local_path)
                 os.makedirs(full_local_path)
-            
+    
             if filename not in cache:
                 cache[filename] = {}
             sync_tree(
@@ -130,40 +163,35 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
                     logger.debug('File %s has not changed' % relative_remote_path)
                     continue
                 if file_differs(full_local_path, cache[filename]):
-                    # file changed locally
-                    logger.debug('File %s has changed locally' % relative_remote_path)
-                    conflict_handling = config['conflict_handling']['local_changes']
-                    if conflict_handling == 'keep':
+                    if (handle_local_change(
+                    full_local_path, relative_remote_path) == 'skip'):
                         continue
-                    elif conflict_handling == 'ask':
-                        if not ask_for_overwrite(relative_remote_path):
-                            continue
-                    elif conflict_handling == 'overwrite':
-                        logger.info("File %s will be overwritten" % relative_remote_path)
-                    elif conflict_handling == 'makeCopy':
-                        # TODO: Create conflict file
-                        pass
-            
+
+            cache[filename] = remote_digest
             full_remote_path = os.path.join(remote_path, filename)
-            logger.debug('Downloading file %s' % full_remote_path)
-            with open(full_local_path, 'wb') as local_file:
-                connection.retrieveFile(SMB_SHARE_NAME, full_remote_path, local_file)
-                cache[filename] = remote_digest
-                logger.debug('Downloading of file %s complete!' % full_remote_path)
+            download_file(connection, full_remote_path, full_local_path)
 
             # set last write time to that of the remote file
             os.utime(full_local_path,
                     (shared_file.last_access_time, shared_file.last_write_time))
 
-    if fileset:  # if fileset not empty, remote files have been deleted
+    if fileset:  # if fileset not empty, remote files / folders have been deleted
         for filename in fileset:
+            # TODO: handle recursively in case a whole directory is deleted
             del cache[filename]
-            full_path = os.path.join(destination, rel_path, filename)
-            logger.debug('File %s has been deleted on remote' % filename)
-            # TODO: Ask Option
-            if config['conflict_handling']['remote-deleted'] == 'delete':
-                logger.debug('File %s will be removed' % filename)
-                remove_tree(full_path)
+            rel_path = os.path.join(rel_path, filename)
+            full_path = os.path.join(destination, rel_path)
+            logger.debug('%s has been deleted on remote' % rel_path)
+            conflict_handling = config['conflict_handling']['remote-deleted']
+            if conflict_handling == 'ask':
+                answer = ask_question('%s has been deleted on remote. Do you want to delete your local copy?' % rel_path)
+                if answer is False:
+                    return
+            elif conflict_handling != 'delete':
+                return
+
+            logger.info('%s will be removed' % rel_path)
+            remove_tree(full_path)
 
 
 config = read_config()
@@ -181,6 +209,7 @@ for name, repository in config['repositories'].items():
     cache = load_cache(cache_file)
     sync_tree(connection, source, destination, '', excludes, cache)
     dump_cache(cache_file, cache)
+    logger.info("Sync of %s completed" % name)
 
 
 connection.close()
