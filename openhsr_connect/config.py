@@ -63,7 +63,23 @@ schema = {
                     'additionalProperties': False
                 },
                 'repositories': {
-                    'type': 'object'
+                    'type': 'object',
+                    "patternProperties": {
+                        '^[^\/*&%\s]+$': {
+                            'type': 'object',
+                            # 'properties': {
+                            #
+                            # }
+                        }
+                    },
+                    'additionalProperties': False
+                    #
+                    # InfSi1:
+                    #   remote_dir: Informatik/Fachbereich/Informationssicherheit_1_-_Grundlagen/InfSi1
+                    #   local_dir: synced/InfSi1
+                    #   exclude:
+                    #     - '*.exe'
+                    #     - 'Archiv'
                 }
             },
             'additionalProperties': False
@@ -125,7 +141,7 @@ def load_config():
 
     # if repositories is not (fully) declared
     if 'repositories' not in configuration['sync']:
-        repositories = []
+        configuration['sync']['repositories'] = {}
 
     return configuration
 
