@@ -2,11 +2,11 @@
 Usage:
   openhsr-connect sync [--local-changes=(ask|overwrite|keep|makeCopy)]
       [--remote-deleted=(ask|delete|keep)] [-q | -v]
+  openhsr-connect update-password
   openhsr-connect daemon [-d | --daemonize] [-q | -v]
   openhsr-connect help
   openhsr-connect -h | --help
   openhsr-connect --version
-  openhsr-connect update-password
 
 Options:
   -h --help             show this screen.
@@ -42,9 +42,10 @@ from . import __VERSION__
 
 logger = logging.getLogger('openhsr_connect')
 
+
 def main():
-    # TODO: implement "update-password" command
     try:
+        logger.setLevel(logging.INFO)
         arguments = docopt(__doc__, version='openhsr-connect %s' % __VERSION__)
         logger.warning('WARNUNG: NOCH IST DIESE SOFTWARE IN ENTWICKLUNG - ALSO NICHT FÜR'
                        'DEN PRODUKTIVEN EINSATZ GEEIGNET!')
@@ -85,7 +86,6 @@ def main():
                         sys.stderr.write("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror), file=sys.stderr)
                         sys.exit(1)
             user_daemon.create_socket()
-
     except jsonschema.exceptions.ValidationError as e:
         logger.error('Your configuration file is invalid:')
         logger.error(e.message)
