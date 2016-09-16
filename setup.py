@@ -15,7 +15,7 @@ setup(
     description="Die Offene HSR-Mapper Alternative",
     long_description=("For more information, please checkout the `Github Page "
                       "<https://github.com/altcomphsr/connect>`_."),
-    license="MIT",
+    license="GPLv3",
     platforms=["Linux", "BSD", "MacOS"],
     include_package_data=True,
     zip_safe=False,
