@@ -138,9 +138,9 @@ def load_config(raise_if_incomplete=False):
     if 'conflict_handling' not in config['sync']:
         config['sync']['conflict_handling'] = {}
     if 'local-changes' not in config['sync']['conflict_handling']:
-        config['sync']['conflict_handling']['local-changes'] = 'keep'
+        config['sync']['conflict_handling']['local-changes'] = 'ask'
     if 'remote-deleted' not in config['sync']['conflict_handling']:
-        config['sync']['conflict_handling']['remote-deleted'] = 'delete'
+        config['sync']['conflict_handling']['remote-deleted'] = 'ask'
 
     # if repositories is not (fully) declared
     if 'repositories' not in config['sync']:
