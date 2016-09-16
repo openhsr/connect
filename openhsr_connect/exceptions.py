@@ -4,3 +4,7 @@ class ConnectException(Exception):
 
 class PrintException(ConnectException):
     pass
+
+
+class PasswordException(Exception):
+    pass

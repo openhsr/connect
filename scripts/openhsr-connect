@@ -16,7 +16,7 @@ def main():
         sys.exit(0)
 
     # Script must be alled with exactly 5 or 6 arguments
-    if len(sys.argv) not in (5, 6):
+    if len(sys.argv) not in (6, 7):
         print('ERROR:Wrong number of arguments %s!' % sys.argv, file=sys.stderr)
         sys.exit(1)
 
@@ -43,7 +43,7 @@ def main():
     data['number-of-copies'] = sys.argv[4]
     data['options'] = sys.argv[5]
     data['directory'] = directory
-    data['data'] = base64.b64encode(raw)
+    data['data'] = base64.b64encode(raw).decode('utf-8')
 
     # connect to the user deamon and send a utf-8 binary stream with the json object
     # the deamon will handle further printing work.

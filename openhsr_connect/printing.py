@@ -4,19 +4,20 @@ import smtplib
 import base64
 from subprocess import Popen, PIPE, STDOUT
 import logging
+import keyring
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email import encoders
 from .exceptions import PrintException
+from .exceptions import PasswordException
 
 # These values are hard-coded to be updated easily in case of a change in the HSR infrastructure.
 reciever = 'mobileprint@hsr.ch'
 smtp_server = 'smtp.hsr.ch'
 
 logger = logging.getLogger('openhsr_connect.print')
-
 
 def send_to_printer(data):
     """
@@ -25,9 +26,11 @@ def send_to_printer(data):
 
         This method can throw a PrintException that must be caughted by the daemon.
     """
-    # TODO: Load from CFG
-    sender = 'raphael.zimmermann@hsr.ch'
-    password = '***'
+
+    # TODO store password in keyring
+    # TODO load username and sender from config
+    sender = "michael.wieland@hsr.ch"
+    password = load_userpw(sender)
 
     file_name = 'hsr-email-print-%s-%s.pdf' % (data['id'], data['user'])
     full_path = os.path.join(data['directory'], file_name)
@@ -37,6 +40,18 @@ def send_to_printer(data):
 
     # Remove PDF file when sent
     os.remove(full_path)
+
+
+def load_userpw(username):
+    """
+        This method can throw a PasswordException
+    """
+
+    password = keyring.get_password("openhsr-connect", username)
+    if password is None:
+        raise PasswordException('No password found for user %s' % username)
+    else:
+        return password
 
 
 def create_pdf(full_path, data):
@@ -92,7 +107,8 @@ def send_email(full_path, sender, password):
         # Send the email via an SMTP server.
         s = smtplib.SMTP(smtp_server)
         s.starttls()
-        smtp.login(sender, password)
+		# TODO Load username from config
+        s.login(sender, password)
         s.sendmail(sender, reciever, outer.as_string())
         logger.info('E-Mail to %s sent!' % reciever)
         s.quit()
