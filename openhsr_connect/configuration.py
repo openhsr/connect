@@ -3,7 +3,7 @@ import os
 import logging
 import getpass
 import keyring
-from .exceptions import PasswordException
+from .exceptions import PasswordException, ConfigurationException
 import jsonschema
 
 logger = logging.getLogger('openhsr_connect.config')

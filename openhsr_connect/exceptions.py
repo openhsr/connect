@@ -6,5 +6,9 @@ class PrintException(ConnectException):
     pass
 
 
-class PasswordException(Exception):
+class PasswordException(ConnectException):
+    pass
+
+
+class ConfigurationException(ConnectException):
     pass
