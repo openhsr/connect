@@ -85,12 +85,11 @@ def handle_local_change(full_local_path, rel_remote_path, config):
     logger.debug('File %s has changed locally' % rel_remote_path)
     handling_config = config['local-changes']
     if handling_config == 'keep':
-        return 'skip'
+        return 'keep'
     elif handling_config == 'ask':
         question = "Do you want to overwrite %s with the new version?"
         if not ask_question(question % rel_remote_path):
-            # TODO: Don't ask again for this file next time the sync is run
-            return 'skip'
+            return 'keep'
         logger.debug("File %s will be overwritten" % rel_remote_path)
     elif handling_config == 'overwrite':
         logger.info("File %s will be overwritten" % rel_remote_path)
@@ -166,7 +165,10 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
                     handling_result = handle_local_change(
                         full_local_path, relative_remote_path,
                         config['conflict_handling'])
-                    if (handling_result == 'skip'):
+                    if (handling_result == 'keep'):
+                        cache[filename] = remote_digest
+                        continue
+                    elif (handling_result == 'skip'):
                         continue
 
             cache[filename] = remote_digest
