@@ -27,22 +27,20 @@ Options:
 __VERSION__ = '0.0.1.dev'
 
 from docopt import docopt
-import yaml
-
-
-def merge(dict_1, dict_2):
-    return dict((str(key), dict_1.get(key) or dict_2.get(key))
-                for key in set(dict_2) | set(dict_1))
-
+import traceback
+from . import config
 
 def main():
-    arguments = docopt(__doc__, version='openHSR-connect %s' % __VERSION__)
-    config = yaml.load(open('openhsr_connect/etc/config.yml'))
-    result = merge(arguments, config)
+    try:
+        arguments = docopt(__doc__, version='openhsr-connect %s' % __VERSION__)
+        config.load_config()
 
-    print("test")
-    print(arguments)
-    print(config)
-    print(result)
+        # TODO: override configuration!
 
-main()
+    except Exception as e:
+        traceback.print_exc()
+        print('openhsr-connect has crashed :(')
+        print('Please report at https://github.com/openhsr/connect/issues/')
+
+if __name__ == '__main__':
+    main()
