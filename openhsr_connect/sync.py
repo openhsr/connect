@@ -50,8 +50,8 @@ def read_config():
 
 def load_cache(filename):
     cache = {}
-    if os.path.exists(cache_file):
-        with open(cache_file, 'r') as fp:
+    if os.path.exists(filename):
+        with open(filename, 'r') as fp:
             cache = json.load(fp)
     return cache
 
@@ -81,20 +81,20 @@ def file_differs(filepath, remote_digest):
     return not remote_digest == local_digest
 
 
-def handle_local_change(full_local_path, rel_remote_path):
+def handle_local_change(full_local_path, rel_remote_path, config):
     logger.debug('File %s has changed locally' % rel_remote_path)
-    conflict_handling = config['conflict_handling']['local-changes']
-    if conflict_handling == 'keep':
+    handling_config = config['local-changes']
+    if handling_config == 'keep':
         return 'skip'
-    elif conflict_handling == 'ask':
-        question = "Do you want to overwrite %s with the new version?" % rel_remote_path
-        if not ask_question(question):
+    elif handling_config == 'ask':
+        question = "Do you want to overwrite %s with the new version?"
+        if not ask_question(question % rel_remote_path):
             # TODO: Don't ask again for this file next time the sync is run
             return 'skip'
         logger.debug("File %s will be overwritten" % rel_remote_path)
-    elif conflict_handling == 'overwrite':
+    elif handling_config == 'overwrite':
         logger.info("File %s will be overwritten" % rel_remote_path)
-    elif conflict_handling == 'makeCopy':
+    elif handling_config == 'makeCopy':
         rename_file(full_local_path)
 
 
@@ -149,7 +149,7 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
             if not os.path.exists(full_local_path):
                 logger.debug('Creating missing directory %s' % full_local_path)
                 os.makedirs(full_local_path)
-    
+
             if filename not in cache:
                 cache[filename] = {}
             sync_tree(
@@ -157,14 +157,16 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
                 os.path.join(rel_path, filename), excludes, cache[filename])
         else:
             remote_digest = "%s-%s" % (shared_file.file_size,
-                                    shared_file.last_write_time)
+                                       shared_file.last_write_time)
             if os.path.exists(full_local_path) and filename in cache:
                 if remote_digest == cache[filename]:
                     logger.debug('File %s has not changed' % relative_remote_path)
                     continue
                 if file_differs(full_local_path, cache[filename]):
-                    if (handle_local_change(
-                    full_local_path, relative_remote_path) == 'skip'):
+                    handling_result = handle_local_change(
+                        full_local_path, relative_remote_path,
+                        config['conflict_handling'])
+                    if (handling_result == 'skip'):
                         continue
 
             cache[filename] = remote_digest
@@ -172,8 +174,9 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
             download_file(connection, full_remote_path, full_local_path)
 
             # set last write time to that of the remote file
-            os.utime(full_local_path,
-                    (shared_file.last_access_time, shared_file.last_write_time))
+            os.utime(
+                full_local_path,
+                (shared_file.last_access_time, shared_file.last_write_time))
 
     if fileset:  # if fileset not empty, remote files / folders have been deleted
         for filename in fileset:
@@ -184,7 +187,9 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
             logger.debug('%s has been deleted on remote' % rel_path)
             conflict_handling = config['conflict_handling']['remote-deleted']
             if conflict_handling == 'ask':
-                answer = ask_question('%s has been deleted on remote. Do you want to delete your local copy?' % rel_path)
+                question = ("%s has been deleted on remote. "
+                            "Do you want to delete your local copy?")
+                answer = ask_question(question % rel_path)
                 if answer is False:
                     return
             elif conflict_handling != 'delete':
@@ -194,22 +199,25 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
             remove_tree(full_path)
 
 
-config = read_config()
-connection = smb_login()
+def sync(config):
+    connection = smb_login()
+    for name, repository in config['repositories'].items():
+        source = repository['remote_dir']
+        destination = repository['local_dir']
+        if not os.path.exists(destination):
+            os.makedirs(destination)
+        logger.info('Starting sync: %s -> %s' % (source, destination))
+        excludes = config['global_exclude'] + repository['exclude']
+        logger.info('The following patterns will be excluded: %s' % (excludes))
+        cache_file = '%s/.%s.json' % (destination, name)
+        cache = load_cache(cache_file)
+        sync_tree(connection, source, destination, '', excludes, cache)
+        dump_cache(cache_file, cache)
+        logger.info("Sync of %s completed" % name)
 
-for name, repository in config['repositories'].items():
-    source = repository['remote_dir']
-    destination = repository['local_dir']
-    if not os.path.exists(destination):
-        os.makedirs(destination)
-    logger.info('Starting sync: %s -> %s' % (source, destination))
-    excludes = config['global_exclude'] + repository['exclude']
-    logger.info('The following patterns will be excluded: %s' % (excludes))
-    cache_file = '%s/.%s.json' % (destination, name)
-    cache = load_cache(cache_file)
-    sync_tree(connection, source, destination, '', excludes, cache)
-    dump_cache(cache_file, cache)
-    logger.info("Sync of %s completed" % name)
+    connection.close()
 
 
-connection.close()
+if __name__ == "__main__":
+    config = read_config()
+    sync(config)
