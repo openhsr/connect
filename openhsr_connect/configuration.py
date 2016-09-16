@@ -110,12 +110,12 @@ def load_config(raise_if_incomplete=False):
 
     # create default config if it does not yet exist
     if not os.path.exists(config_path):
+        if raise_if_incomplete:
+            raise ConfigurationException('Configuration does not yet exist!')
         create_default_config(config_path)
 
     config = None
     with open(config_path, 'r') as f:
-        if raise_if_incomplete:
-            raise ConfigurationException('Configuration does not yet exist!')
         config = yaml.load(f)
 
     # Verify if the password is in the keyring
