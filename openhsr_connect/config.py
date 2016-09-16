@@ -20,8 +20,8 @@ sync:
     - Thumbs.db
 
   conflict_handling:
-    local-changes: keep # ask | keep | overwrite | makeCopy
-    remote-deleted: delete # delete | keep
+    local-changes: ask # ask | keep | overwrite | makeCopy
+    remote-deleted: ask # ask | delete | keep
 """
 
 SCHEMA = {
@@ -57,7 +57,7 @@ SCHEMA = {
                         },
                         'remote-deleted': {
                             'type': 'string',
-                            'pattern': '^(delete|keep)$'
+                            'pattern': '^(ask|delete|keep)$'
                         }
                     },
                     'additionalProperties': False
