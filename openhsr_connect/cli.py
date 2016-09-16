@@ -32,7 +32,7 @@ import traceback
 import jsonschema
 import webbrowser
 import sys
-from . import config
+from . import configuration
 from . import sync
 from . import __VERSION__
 
@@ -40,7 +40,7 @@ from . import __VERSION__
 def main():
     try:
         arguments = docopt(__doc__, version='openhsr-connect %s' % __VERSION__)
-        configuration = config.load_config()
+        config = configuration.load_config()
 
         # print(arguments)
         if arguments['help']:
@@ -51,14 +51,14 @@ def main():
                     print('%s is not a valid value for local-changes'
                           % arguments['--local-changes'], file=sys.stderr)
                     sys.exit(1)
-                configuration['sync']['conflict_handling']['local-changes'] = arguments['--local-changes']
+                config['sync']['conflict_handling']['local-changes'] = arguments['--local-changes']
             if arguments['--remote-deleted']:
                 if arguments['--remote-deleted'] not in ['ask', 'keep', 'overwrite', 'makeCopy']:
                     print('%s is not a valid value for remote-deleted'
                           % arguments['--remote-deleted'], file=sys.stderr)
                     sys.exit(1)
-                configuration['sync']['conflict_handling']['remote-deleted'] = arguments['--remote-deleted']
-            sync.sync(configuration)
+                config['sync']['conflict_handling']['remote-deleted'] = arguments['--remote-deleted']
+            sync.sync(config)
     except jsonschema.exceptions.ValidationError as e:
         print('Your configuration file is invalid:', file=sys.stderr)
         print(e.message, file=sys.stderr)

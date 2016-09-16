@@ -21,7 +21,7 @@ smtp_server = 'smtp.hsr.ch'
 logger = logging.getLogger('openhsr_connect.print')
 
 
-def send_to_printer(configuration, password, data):
+def send_to_printer(config, password, data):
     """
     This method shall be called by the cups backend backend.
     As input, the "data" object sent from the cups backend is expected
@@ -33,7 +33,7 @@ def send_to_printer(configuration, password, data):
     full_path = os.path.join(data['directory'], file_name)
 
     create_pdf(full_path, data)
-    send_email(full_path, configuration['email'], password)
+    send_email(full_path, config['email'], password)
 
     # Remove PDF file when sent
     os.remove(full_path)

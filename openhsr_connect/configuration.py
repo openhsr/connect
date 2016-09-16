@@ -112,53 +112,53 @@ def load_config(raise_if_incomplete=False):
     if not os.path.exists(config_path):
         create_default_config(config_path)
 
-    configuration = None
+    config = None
     with open(config_path, 'r') as f:
         if raise_if_incomplete:
             raise ConfigurationException('Configuration does not yet exist!')
-        configuration = yaml.load(f)
+        config = yaml.load(f)
 
     # Verify if the password is in the keyring
     try:
-        get_password(configuration)
+        get_password(config)
     except PasswordException as e:
         if raise_if_incomplete:
             raise e
         password = getpass.getpass('Dein HSR-Kennwort (wird sicher im Keyring gespeichert): ')
-        keyring.set_password('openhsr-connect', configuration['login']['username'], password)
+        keyring.set_password('openhsr-connect', config['login']['username'], password)
 
-    # Validate the configuration
-    jsonschema.validate(configuration, SCHEMA)
+    # Validate the config
+    jsonschema.validate(config, SCHEMA)
 
     # if "global_exclude" is not (fully) declared:
-    if 'global_exclude' not in configuration['sync']:
-        configuration['sync']['global_exclude'] = []
+    if 'global_exclude' not in config['sync']:
+        config['sync']['global_exclude'] = []
 
     # if "conflict_handling" is not (fully) declared:
-    if 'conflict_handling' not in configuration['sync']:
-        configuration['sync']['conflict_handling'] = {}
-    if 'local-changes' not in configuration['sync']['conflict_handling']:
-        configuration['sync']['conflict_handling']['local-changes'] = 'keep'
-    if 'remote-deleted' not in configuration['sync']['conflict_handling']:
-        configuration['sync']['conflict_handling']['remote-deleted'] = 'delete'
+    if 'conflict_handling' not in config['sync']:
+        config['sync']['conflict_handling'] = {}
+    if 'local-changes' not in config['sync']['conflict_handling']:
+        config['sync']['conflict_handling']['local-changes'] = 'keep'
+    if 'remote-deleted' not in config['sync']['conflict_handling']:
+        config['sync']['conflict_handling']['remote-deleted'] = 'delete'
 
     # if repositories is not (fully) declared
-    if 'repositories' not in configuration['sync']:
-        configuration['sync']['repositories'] = {}
+    if 'repositories' not in config['sync']:
+        config['sync']['repositories'] = {}
 
-    for name, repository in configuration['sync']['repositories'].items():
+    for name, repository in config['sync']['repositories'].items():
         if 'exclude' not in repository:
             repository['exclude'] = []
-    return configuration
+    return config
 
 
-def get_password(configuration):
+def get_password(config):
     """
         This method can throw a PasswordException
     """
-    password = keyring.get_password('openhsr-connect', configuration['login']['username'])
+    password = keyring.get_password('openhsr-connect', config['login']['username'])
     if password is None:
         raise PasswordException('No password found for user %s' %
-                                configuration['login']['username'])
+                                config['login']['username'])
     else:
         return password

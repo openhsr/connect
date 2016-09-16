@@ -5,7 +5,7 @@ import logging
 
 from . import printing
 from .exceptions import PrintException
-from . import config
+from . import configuration
 
 logger = logging.getLogger('openhsr_connect.print')
 
@@ -34,9 +34,9 @@ def create_socket():
         data = read_data(conn)
 
         try:
-            configuration = config.load_config(raise_if_incomplete=True)
-            password = config.get_password(configuration)
-            printing.send_to_printer(configuration, password, data)
+            config = configuration.load_config(raise_if_incomplete=True)
+            password = config.get_password(config)
+            printing.send_to_printer(config, password, data)
         except PrintException as e:
             logger.error('Exception occured during send_to_printer: \n%s ' % e)
 

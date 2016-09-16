@@ -4,7 +4,7 @@ import socket
 import logging
 import json
 import fnmatch
-from . import config as connect_config
+from . import configuration
 from . import exceptions
 
 from smb.SMBConnection import SMBConnection
@@ -18,12 +18,12 @@ SMB_CLIENT_NAME = socket.gethostname()
 SMB_DOMAIN = 'HSR'
 SMB_SERVER_PORT = 445
 
-logger = logging.getLogger('openhsr_connect.config')
+logger = logging.getLogger('openhsr_connect.sync')
 
 
 def smb_login(login_config):
     username = login_config['username']
-    password = connect_config.get_password(config)
+    password = configuration.get_password(config)
     connection = SMBConnection(
         username, password, SMB_CLIENT_NAME,
         SMB_SERVER_NAME, domain=SMB_DOMAIN, use_ntlm_v2=False)
@@ -216,5 +216,5 @@ def sync(config):
 
 
 if __name__ == "__main__":
-    config = connect_config.load_config()
+    config = configuration.load_config()
     sync(config)
