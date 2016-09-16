@@ -1,15 +1,16 @@
 import sys
 import os
-import smtplib
 import base64
 from subprocess import Popen, PIPE, STDOUT
 import logging
 import keyring
 
+import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email import encoders
+
 from .exceptions import PrintException
 from .exceptions import PasswordException
 
@@ -19,46 +20,30 @@ smtp_server = 'smtp.hsr.ch'
 
 logger = logging.getLogger('openhsr_connect.print')
 
-def send_to_printer(data):
-    """
-        This method shall be called by the cups backend backend.
-        As input, the "data" object sent from the cups backend is expected
 
-        This method can throw a PrintException that must be caughted by the daemon.
+def send_to_printer(configuration, password, data):
     """
+    This method shall be called by the cups backend backend.
+    As input, the "data" object sent from the cups backend is expected
 
-    # TODO store password in keyring
-    # TODO load username and sender from config
-    sender = "michael.wieland@hsr.ch"
-    password = load_userpw(sender)
+    This method can throw a PrintException that must be caughted by the daemon.
+    """
 
     file_name = 'hsr-email-print-%s-%s.pdf' % (data['id'], data['user'])
     full_path = os.path.join(data['directory'], file_name)
 
     create_pdf(full_path, data)
-    send_email(full_path, sender, password)
+    send_email(full_path, configuration['email'], password)
 
     # Remove PDF file when sent
     os.remove(full_path)
 
 
-def load_userpw(username):
-    """
-        This method can throw a PasswordException
-    """
-
-    password = keyring.get_password("openhsr-connect", username)
-    if password is None:
-        raise PasswordException('No password found for user %s' % username)
-    else:
-        return password
-
-
 def create_pdf(full_path, data):
     """
-        Creates a PDF from the given stdin into a file at full_path.
-        If the conversion fails, an error is logged to stderr and the program quits with
-        exit code 1.
+    Creates a PDF from the given stdin into a file at full_path.
+    If the conversion fails, an error is logged to stderr and the program quits with
+    exit code 1.
     """
 
     raw = base64.b64decode(data['data'])
@@ -107,7 +92,6 @@ def send_email(full_path, sender, password):
         # Send the email via an SMTP server.
         s = smtplib.SMTP(smtp_server)
         s.starttls()
-		# TODO Load username from config
         s.login(sender, password)
         s.sendmail(sender, reciever, outer.as_string())
         logger.info('E-Mail to %s sent!' % reciever)

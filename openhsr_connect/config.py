@@ -102,7 +102,7 @@ def create_default_config(config_path):
         f.write(config)
 
 
-def load_config():
+def load_config(raise_if_incomplete=False):
     """
     Loads the user configuration and creates the default configuration if it does not yet exist.
     """
@@ -114,12 +114,16 @@ def load_config():
 
     configuration = None
     with open(config_path, 'r') as f:
+        if raise_if_incomplete:
+            raise ConfigurationException('Configuration does not yet exist!')
         configuration = yaml.load(f)
 
     # Verify if the password is in the keyring
     try:
         get_password(configuration)
     except PasswordException as e:
+        if raise_if_incomplete:
+            raise e
         password = getpass.getpass('Dein HSR-Kennwort (wird sicher im Keyring gespeichert): ')
         keyring.set_password('openhsr-connect', configuration['login']['username'], password)
 

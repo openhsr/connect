@@ -1,22 +1,23 @@
-#! /usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import os
 import socket
 import json
 import logging
+
 from . import printing
 from .exceptions import PrintException
-
+from . import config
 
 logger = logging.getLogger('openhsr_connect.print')
 
-# TODO: When should we close the socket
-# conn.close()
-
 
 def create_socket():
-
+    """
+    Create a socket and listen to any connection.
+    The socket accepts connections from the CUPS Backend, sending JSON-Objects
+    over the connection.
+    This allows us to handle the printing in the user space - access passwords safely and
+    display (if required) warnings to the user.
+    """
     socketpath = '/var/run/user/%s/openhsr-connect.sock' % str(os.getuid())
     try:
         os.remove(socketpath)
@@ -33,12 +34,20 @@ def create_socket():
         data = read_data(conn)
 
         try:
-            printing.send_to_printer(data)
+            configuration = config.load_config(raise_if_incomplete=True)
+            password = config.get_password(configuration)
+            printing.send_to_printer(configuration, password, ata)
         except PrintException as e:
             logger.error('Exception occured during send_to_printer: \n%s ' % e)
 
 
 def read_data(conn):
+    """
+    Reads the data from the socket. The CUPS-Backend sends a utf-8 binary encoded string
+    with a json object containing the .ps file to print as well as other meta information for
+    the print.
+    This method reads all the data and returns the parsed JSON object.
+    """
     binary = b''
     while True:
         bufsize = 1024

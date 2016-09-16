@@ -7,6 +7,7 @@ Usage:
   openhsr-connect help (sync|vpn|print)
   openhsr-connect -h | --help
   openhsr-connect --version
+  openhsr-connect update-password
 
 Options:
   -h --help             show this screen.
