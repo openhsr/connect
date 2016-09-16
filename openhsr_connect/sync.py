@@ -155,7 +155,7 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache, config
                 if file_differs(full_local_path, cache[filename]):
                     handling_result = handle_local_change(
                         full_local_path, relative_remote_path,
-                        config['conflict_handling'])
+                        config['conflict-handling'])
                     if (handling_result == 'keep'):
                         cache[filename] = remote_digest
                         continue
@@ -178,7 +178,7 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache, config
             rel_path = os.path.join(rel_path, filename)
             full_path = os.path.join(destination, rel_path)
             logger.debug('%s has been deleted on remote' % rel_path)
-            conflict_handling = config['conflict_handling']['remote-deleted']
+            conflict_handling = config['conflict-handling']['remote-deleted']
             if conflict_handling == 'ask':
                 question = ("%s has been deleted on remote. "
                             "Do you want to delete your local copy?")
@@ -198,12 +198,12 @@ def sync(config):
     if not repositories:
         logger.info("No repositories in config")
     for name, repository in repositories.items():
-        source = repository['remote_dir']
-        destination = repository['local_dir']
+        source = repository['remote-dir']
+        destination = repository['local-dir']
         if not os.path.exists(destination):
             os.makedirs(destination)
         logger.info('Starting sync: %s -> %s' % (source, destination))
-        excludes = config['sync']['global_exclude'] + repository['exclude']
+        excludes = config['sync']['global-exclude'] + repository['exclude']
         logger.info('The following patterns will be excluded: %s' % (excludes))
         cache_file = '%s/.%s.json' % (destination, name)
         cache = load_cache(cache_file)
