@@ -25,7 +25,7 @@ Options:
 """
 from docopt import docopt
 import traceback
-
+import jsonschema
 from . import config
 from . import __VERSION__
 
@@ -37,9 +37,12 @@ def main():
 
         # TODO: override configuration!
 
+    except jsonschema.exceptions.ValidationError as e:
+        print('Your configuration file is invalid:')
+        print(e.message)
     except Exception as e:
         traceback.print_exc()
-        print('openhsr-connect has crashed :(')
+        print('\n\nopenhsr-connect has crashed :(')
         print('Please report at https://github.com/openhsr/connect/issues/')
 
 if __name__ == '__main__':

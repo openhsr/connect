@@ -4,7 +4,7 @@ import logging
 import getpass
 import keyring
 from .exceptions import PasswordException
-
+import jsonschema
 
 logger = logging.getLogger('openhsr_connect.config')
 
@@ -23,6 +23,55 @@ sync:
     local-changes: keep # ask | keep | overwrite | makeCopy
     remote-deleted: delete # delete | keep
 """
+
+schema = {
+    'title': 'open\HSR Connect configuration Schema',
+    'type': 'object',
+    'properties': {
+        'login': {
+            'type': 'object',
+            'properties': {
+                'username': {
+                    'type': 'string'
+                },
+                'email': {
+                    'type': 'string',
+                    "pattern": "^[a-zA-Z0-9]+\.[a-zA-Z0-9]+\@hsr.ch$"
+                }
+            },
+            'required': ['username', 'email']
+        },
+        'sync': {
+            'type': 'object',
+            'properties': {
+                'global_exclude': {
+                    'type': 'array',
+                    "items": {"type": "string"},
+                },
+                'conflict_handling': {
+                    'type': 'object',
+                    'properties': {
+                        "local-changes": {
+                            "type": "string",
+                            "pattern": '^(ask|keep|overwrite|makeCopy)$'
+                        },
+                        "remote-deleted": {
+                            "type": "string",
+                            "pattern": '^(delete|keep)$'
+                        }
+                    },
+                    'additionalProperties': False
+                },
+                'repositories': {
+                    'type': 'object'
+                }
+            },
+            'additionalProperties': False
+        }
+    },
+    'additionalProperties': False,
+    'required': ['login', 'sync']
+}
 
 
 def create_default_config(config_path):
@@ -59,8 +108,26 @@ def load_config():
         password = getpass.getpass('Dein HSR-Kennwort (wird sicher im Keyring gespeichert): ')
         keyring.set_password('openhsr-connect', configuration['login']['username'], password)
 
-    # TODO: validate the configuration (JSON SCHEMA)
+    # Validate the configuration
+    jsonschema.validate(configuration, schema)
 
+    # if "global_exclude" is not (fully) declared:
+    if 'global_exclude' not in configuration['sync']:
+        configuration['sync']['global_exclude'] = []
+
+    # if "conflict_handling" is not (fully) declared:
+    if 'conflict_handling' not in configuration['sync']:
+        configuration['sync']['conflict_handling'] = {}
+    if 'local-changes' not in configuration['sync']['conflict_handling']:
+        configuration['sync']['conflict_handling']['local-changes'] = 'keep'
+    if 'remote-deleted' not in configuration['sync']['conflict_handling']:
+        configuration['sync']['conflict_handling']['remote-deleted'] = 'delete'
+
+    # if repositories is not (fully) declared
+    if 'repositories' not in configuration['sync']:
+        repositories = []
+
+    return configuration
 
 def get_password(configuration):
     """
@@ -68,6 +135,7 @@ def get_password(configuration):
     """
     password = keyring.get_password('openhsr-connect', configuration['login']['username'])
     if password is None:
-        raise PasswordException('No password found for user %s' % username)
+        raise PasswordException('No password found for user %s' %
+                                configuration['login']['username'])
     else:
         return password
