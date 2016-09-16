@@ -4,22 +4,18 @@ login:
   email: maria.muster@hsr.ch
 
 sync:
-  remotes: # available file servers
-    skripte:
-      hostname: 152.96.90.26
-      port: 445
-      share: skripte
-      domain: HSR
-
   global_exclude:
     - .DS_Store
     - Thumbs.db
 
+  conflict_handling:
+    local-changes: keep # ask | keep | overwrite | makeCopy
+    remote-deleted: delete # delete | keep
+
   repositories: # sync-units
     InfSi1:
-      remote: skripte # file server to use
       remote_dir: Informatik/Fachbereich/Informationssicherheit_1_-_Grundlagen/InfSi1
       local_dir: synced/InfSi1
       exclude: 
-        - *.exe
-        - Archiv
+        - '*.exe'
+        - 'Archiv'
