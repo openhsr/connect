@@ -29,15 +29,21 @@ The configuration file is located in `~/.config/openhsr-connect.yaml`
 """
 from docopt import docopt
 import traceback
+import os
 import jsonschema
 import webbrowser
 import sys
 from . import configuration
+from . import user_daemon
 from . import sync
 from . import __VERSION__
 
 
 def main():
+    # TODO: implement "update-password" command
+    # TODO: setup logging according to -v od -q
+    # -v = DEBUG
+    # -q = ERROR
     try:
         arguments = docopt(__doc__, version='openhsr-connect %s' % __VERSION__)
         config = configuration.load_config()
@@ -59,6 +65,18 @@ def main():
                     sys.exit(1)
                 config['sync']['conflict_handling']['remote-deleted'] = arguments['--remote-deleted']
             sync.sync(config)
+        if arguments['daemon']:
+            if arguments['--daemonize']:
+                try:
+                    pid = os.fork()
+                    if pid > 0:
+                        print('Forked to background!')
+                        sys.exit(0)
+                except OSError as e:
+                        sys.stderr.write("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror), file=sys.stderr)
+                        sys.exit(1)
+            user_daemon.create_socket()
+
     except jsonschema.exceptions.ValidationError as e:
         print('Your configuration file is invalid:', file=sys.stderr)
         print(e.message, file=sys.stderr)

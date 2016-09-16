@@ -58,6 +58,3 @@ def read_data(conn):
             break
 
     return json.loads(binary.decode('utf-8'))
-
-if __name__ == '__main__':
-    create_socket()
