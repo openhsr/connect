@@ -3,14 +3,13 @@ from datetime import datetime
 import socket
 import logging
 import json
-from yaml import load as yaml_load
 import fnmatch
-import getpass  # used until password management is implemented
+from . import config as connect_config
+from . import exceptions
 
 from smb.SMBConnection import SMBConnection
 from smb.smb_structs import ProtocolError
 
-CONFIG_FILE = '../config.example.yaml'
 
 SMB_SERVER_NAME = 'c206.hsr.ch'
 SMB_SERVER_IP = socket.gethostbyname(SMB_SERVER_NAME)
@@ -19,38 +18,25 @@ SMB_CLIENT_NAME = socket.gethostname()
 SMB_DOMAIN = 'HSR'
 SMB_SERVER_PORT = 445
 
-# Setup logger
-logger = logging.getLogger('connect')
-# TODO: setup logger in cli
-logger.setLevel(logging.DEBUG)
-console_handler = logging.StreamHandler()
-formatter = logging.Formatter('[%(levelname)s] [%(name)s]  %(message)s')
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
+logger = logging.getLogger('openhsr_connect.config')
 
 
-def smb_login():
-    # TODO: Get username and password from keyring
-    username = input("Username: ")
-    password = getpass.getpass()
+def smb_login(username):
+    password = connect_config.get_password(config)
     connection = SMBConnection(
         username, password, SMB_CLIENT_NAME,
         SMB_SERVER_NAME, domain=SMB_DOMAIN, use_ntlm_v2=False)
-    # TODO: Proper exception handling
-    connect_result = False
     try:
         connect_result = connection.connect(SMB_SERVER_IP, SMB_SERVER_PORT)
+        if connect_result is False:
+            raise ProtocolError("SMB Connection failure")
     except ProtocolError as e:
-        logger.debug('ProtocolException: %s' % e)
-    finally:
-        return connect_result, connection
+        logger.debug("Exception when connecting to %s: %s" % SMB_SERVER_NAME, e)
+        raise exceptions.ConnectException(
+            "Could not connect to %s, wrong password?" % SMB_SERVER_NAME)
 
-
-def read_config():
-    # TODO: Read config from sepperate module
-    with open(CONFIG_FILE, 'r') as cf:
-        config = yaml_load(cf)
-    return config['sync']
+    logger.debug('SMB Connection to %s successful!', SMB_SERVER_NAME)
+    return connection
 
 
 def load_cache(filename):
@@ -136,7 +122,7 @@ def remove_tree(filepath):
         os.removedirs(filepath)
 
 
-def sync_tree(connection, source, destination, rel_path, excludes, cache):
+def sync_tree(connection, source, destination, rel_path, excludes, cache, config):
     fileset = set(cache)
     remote_path = os.path.join(source, rel_path)
     for shared_file in connection.listPath(SMB_SHARE_NAME, remote_path):
@@ -158,7 +144,8 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
                 cache[filename] = {}
             sync_tree(
                 connection, source, destination,
-                os.path.join(rel_path, filename), excludes, cache[filename])
+                os.path.join(rel_path, filename), excludes,
+                cache[filename], config)
         else:
             remote_digest = "%s-%s" % (shared_file.file_size,
                                        shared_file.last_write_time)
@@ -207,22 +194,18 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache):
 
 
 def sync(config):
-    connect_result, connection = smb_login()
-    if connect_result is False:
-        logger.error("Login failed!")
-        return
-    logger.info('Connection successful!')
-    for name, repository in config['repositories'].items():
+    connection = smb_login(config['login']['username'])
+    for name, repository in config['sync']['repositories'].items():
         source = repository['remote_dir']
         destination = repository['local_dir']
         if not os.path.exists(destination):
             os.makedirs(destination)
         logger.info('Starting sync: %s -> %s' % (source, destination))
-        excludes = config['global_exclude'] + repository['exclude']
+        excludes = config['sync']['global_exclude'] + repository['exclude']
         logger.info('The following patterns will be excluded: %s' % (excludes))
         cache_file = '%s/.%s.json' % (destination, name)
         cache = load_cache(cache_file)
-        sync_tree(connection, source, destination, '', excludes, cache)
+        sync_tree(connection, source, destination, '', excludes, cache, config['sync'])
         dump_cache(cache_file, cache)
         logger.info("Sync of %s completed" % name)
 
@@ -230,5 +213,5 @@ def sync(config):
 
 
 if __name__ == "__main__":
-    config = read_config()
+    config = connect_config.load_config()
     sync(config)
