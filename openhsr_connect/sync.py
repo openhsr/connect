@@ -119,7 +119,7 @@ def remove_tree(filepath):
     else:
         for subfile in os.listdir(filepath):
             remove_tree(os.path.join(filepath, subfile))
-        os.removedirs(filepath)
+        os.rmdir(filepath)
 
 
 def sync_tree(connection, source, destination, rel_path, excludes, cache, config):
