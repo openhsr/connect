@@ -179,18 +179,19 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache, config
             rel_path = os.path.join(rel_path, filename)
             full_path = os.path.join(destination, rel_path)
             logger.debug('%s has been deleted on remote' % rel_path)
-            conflict_handling = config['conflict-handling']['remote-deleted']
-            if conflict_handling == 'ask':
-                question = ("%s has been deleted on remote. "
-                            "Do you want to delete your local copy?")
-                answer = ask_question(question % rel_path)
-                if answer is False:
+            if os.path.exists(full_path):
+                conflict_handling = config['conflict-handling']['remote-deleted']
+                if conflict_handling == 'ask':
+                    question = ("%s has been deleted on remote. "
+                                "Do you want to delete your local copy?")
+                    answer = ask_question(question % rel_path)
+                    if answer is False:
+                        return
+                elif conflict_handling != 'delete':
                     return
-            elif conflict_handling != 'delete':
-                return
 
-            logger.info('%s will be removed' % rel_path)
-            remove_tree(full_path)
+                logger.info('%s will be removed' % rel_path)
+                remove_tree(full_path)
 
 
 def sync(config):
