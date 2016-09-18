@@ -79,11 +79,11 @@ def handle_local_change(full_local_path, rel_remote_path, config):
         return 'keep'
     elif handling_config == 'ask':
         question = "Do you want to overwrite %s with the new version?"
-        if not ask_question(question % rel_remote_path):
+        if not ask_question(question % full_local_path):
             return 'keep'
-        logger.debug("File %s will be overwritten" % rel_remote_path)
+        logger.debug("File %s will be overwritten" % full_local_path)
     elif handling_config == 'overwrite':
-        logger.info("File %s will be overwritten" % rel_remote_path)
+        logger.info("File %s will be overwritten" % full_local_path)
     elif handling_config == 'makeCopy':
         rename_file(full_local_path)
 
@@ -122,7 +122,7 @@ def remove_tree(filepath):
         os.rmdir(filepath)
 
 
-def sync_tree(connection, source, destination, rel_path, excludes, cache, config):
+def sync_tree(connection, repo_name, source, destination, rel_path, excludes, cache, config):
     fileset = set(cache)
     remote_path = os.path.join(source, rel_path)
     for shared_file in connection.listPath(SMB_SHARE_NAME, remote_path):
@@ -133,7 +133,7 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache, config
         if filename == '.' or filename == '..':
             continue
         elif exclude_file(rel_path, filename, excludes):
-            logger.debug('Skipping ignored file: %s' % relative_remote_path)
+            logger.debug('%s: Skipping ignored file: %s' % (repo_name, relative_remote_path))
             continue
         elif shared_file.isDirectory:
             if not os.path.exists(full_local_path):
@@ -143,7 +143,7 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache, config
             if filename not in cache:
                 cache[filename] = {}
             sync_tree(
-                connection, source, destination,
+                connection, repo_name, source, destination,
                 os.path.join(rel_path, filename), excludes,
                 cache[filename], config)
         else:
@@ -151,7 +151,8 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache, config
                                        shared_file.last_write_time)
             if os.path.exists(full_local_path) and filename in cache:
                 if remote_digest == cache[filename]:
-                    logger.debug('File %s has not changed' % relative_remote_path)
+                    logger.debug(
+                        '%s: File %s has not changed' % (repo_name, relative_remote_path))
                     continue
                 if file_differs(full_local_path, cache[filename]):
                     handling_result = handle_local_change(
@@ -178,19 +179,19 @@ def sync_tree(connection, source, destination, rel_path, excludes, cache, config
             del cache[filename]
             rel_path = os.path.join(rel_path, filename)
             full_path = os.path.join(destination, rel_path)
-            logger.debug('%s has been deleted on remote' % rel_path)
+            logger.debug('%s: %s has been deleted on remote' % (repo_name, rel_path))
             if os.path.exists(full_path):
                 conflict_handling = config['conflict-handling']['remote-deleted']
                 if conflict_handling == 'ask':
                     question = ("%s has been deleted on remote. "
                                 "Do you want to delete your local copy?")
-                    answer = ask_question(question % rel_path)
+                    answer = ask_question(question % os.path.join(repo_name, rel_path))
                     if answer is False:
                         return
                 elif conflict_handling != 'delete':
                     return
 
-                logger.info('%s will be removed' % rel_path)
+                logger.info('%s: %s will be removed' % (repo_name, rel_path))
                 remove_tree(full_path)
 
 
@@ -209,7 +210,7 @@ def sync(config):
         logger.info('The following patterns will be excluded: %s' % (excludes))
         cache_file = '%s/.%s.json' % (destination, name)
         cache = load_cache(cache_file)
-        sync_tree(connection, source, destination, '', excludes, cache, config['sync'])
+        sync_tree(connection, name, source, destination, '', excludes, cache, config['sync'])
         dump_cache(cache_file, cache)
         logger.info("Sync of %s completed" % name)
 
