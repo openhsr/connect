@@ -1,5 +1,5 @@
-import yaml
 import os
+import yaml
 import logging
 import getpass
 import keyring
@@ -124,7 +124,7 @@ def load_config(raise_if_incomplete=False):
     except PasswordException as e:
         if raise_if_incomplete:
             raise e
-        set_password(config['login']['username'])
+        set_password(config)
 
     # Validate the config
     jsonschema.validate(config, SCHEMA)
@@ -169,4 +169,4 @@ def set_password(config, password=None):
     """
     if password is None:
         password = getpass.getpass('Dein HSR-Kennwort (wird sicher im Keyring gespeichert): ')
-    password = keyring.set_password('openhsr-connect', config['login']['username'], password)
+    keyring.set_password('openhsr-connect', config['login']['username'], password)
