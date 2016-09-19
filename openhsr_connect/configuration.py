@@ -62,6 +62,10 @@ SCHEMA = {
                     },
                     'additionalProperties': False
                 },
+                'default-local-dir': {
+                    'type': 'string',
+                    'pattern': '^.*<name>.*$'
+                },
                 'repositories': {
                     'type': 'object',
                     'patternProperties': {
@@ -75,7 +79,7 @@ SCHEMA = {
                                     'items': {'type': 'string'},
                                 }
                             },
-                            'required': ['remote-dir', 'local-dir']
+                            'required': ['remote-dir']
                         }
                     },
                     'additionalProperties': False
@@ -148,6 +152,12 @@ def load_config(raise_if_incomplete=False):
     for name, repository in config['sync']['repositories'].items():
         if 'exclude' not in repository:
             repository['exclude'] = []
+        if 'local-dir' not in repository:
+            if 'default-local-dir' in config['sync']:
+                repository['local-dir'] = config['sync']['default-local-dir'].replace('<name>', name)
+            else:
+                raise ConfigurationException('local-dir of %s is not defined!' % name)
+
     return config
 
 
