@@ -12,9 +12,7 @@ from smb.smb_structs import ProtocolError
 
 
 SMB_SERVER_NAME = 'c206.hsr.ch'
-SMB_SERVER_IP = socket.gethostbyname(SMB_SERVER_NAME)
 SMB_SHARE_NAME = 'skripte'
-SMB_CLIENT_NAME = socket.gethostname()
 SMB_DOMAIN = 'HSR'
 SMB_SERVER_PORT = 445
 
@@ -24,17 +22,25 @@ logger = logging.getLogger('openhsr_connect.sync')
 def smb_login(config):
     username = config['login']['username']
     password = configuration.get_password(config)
+    try:
+        server_ip = socket.gethostbyname(SMB_SERVER_NAME)
+    except OSError as e:
+        logger.debug("Exception when connecting to %s: %s" % (SMB_SERVER_NAME, e))
+        raise exceptions.ConnectException(
+            'Could not find %s, are you in the HSR network?' % SMB_SERVER_NAME)
+
+    client_name = socket.gethostname()
     connection = SMBConnection(
-        username, password, SMB_CLIENT_NAME,
+        username, password, client_name,
         SMB_SERVER_NAME, domain=SMB_DOMAIN, use_ntlm_v2=False)
     try:
-        connect_result = connection.connect(SMB_SERVER_IP, SMB_SERVER_PORT)
+        connect_result = connection.connect(server_ip, SMB_SERVER_PORT)
         if connect_result is False:
             raise ProtocolError("SMB Connection failure")
     except ProtocolError as e:
         logger.debug("Exception when connecting to %s: %s" % (SMB_SERVER_NAME, e))
         raise exceptions.ConnectException(
-            "Could not connect to %s, wrong password?" % SMB_SERVER_NAME)
+            "Connection to %s failed, wrong password?" % SMB_SERVER_NAME)
     logger.debug('SMB Connection to %s successful!' % SMB_SERVER_NAME)
     return connection
 
