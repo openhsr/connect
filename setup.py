@@ -17,6 +17,7 @@ setup(
                       "<https://github.com/altcomphsr/connect>`_."),
     license="GPLv3",
     platforms=["Linux", "BSD", "MacOS"],
+    # data_files=[('', ['scripts/Generic-PostScript_Printer-Postscript.ppd', 'scripts/openhsr-connect'])],
     include_package_data=True,
     zip_safe=False,
     install_requires=open('./requirements.txt').read(),

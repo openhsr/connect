@@ -1,0 +1,8 @@
+# include requirements
+include requirements.txt
+
+# Include the license file
+include LICENSE.txt
+
+# Include all data in scripts
+include openhsr_connect/resources/*
