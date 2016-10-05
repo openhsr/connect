@@ -1,5 +1,5 @@
 import os
-import yaml
+import pureyaml
 import logging
 import getpass
 import keyring
@@ -120,7 +120,7 @@ def load_config(raise_if_incomplete=False):
 
     config = None
     with open(config_path, 'r') as f:
-        config = yaml.load(f)
+        config = pureyaml.load(f)
 
     # Verify if the password is in the keyring
     try:
