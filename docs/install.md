@@ -5,18 +5,29 @@ Du solltest wann immer möglich diese Pakete verwenden, denn damit bekommst du a
 
 Solltest du ein exotisches Betriebssystem verwenden oder einfach aus Spass den open\HSR-connect von Hand installieren, dann kannst du wie folgt vorgenen.
 
+Führe folgende Befehle als root aus!
+
 ## Drucker
 Damit CUPS das E-Mail-Backend nutzen kann muss dieses verlinkt werden.
 
 ```bash
 ln -s $INSTALLATIONSPFAD/openhsr_connect/resources/openhsr-connect /usr/lib/cups/backend/openhsr-connect
 ```
+für Mac OS X:
+```bash
+ln -s $INSTALLATIONSPFAD/openhsr_connect/resources/openhsr-connect /usr/libexec/cups/backend/openhsr-connect
+```
 
-Zudem müssen die Berechtigungen angepasst werden:
+Zudem müssen die Berechtigungen angepasst werdenn:
 
 ```bash
 chmod 700 /usr/lib/cups/backend/openhsr-connect
 chown root:root /usr/lib/cups/backend/openhsr-connect
+```
+für MAC OS X:
+```bash
+chmod 700 /usr/libexec/cups/backend/openhsr-connect
+chown root:wheel /usr/libexec/cups/backend/openhsr-connect
 ```
 
 Nun muss auch ein Drucker eingerichtet werden.
