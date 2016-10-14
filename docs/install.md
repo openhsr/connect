@@ -9,14 +9,14 @@ Solltest du ein exotisches Betriebssystem verwenden oder einfach aus Spass den o
 Damit CUPS das E-Mail-Backend nutzen kann muss dieses verlinkt werden.
 
 ```bash
-ln -s $INSTALLATIONSPFAD/scripts/hsr-email-print /usr/lib/cups/backend/hsr-email-print
+ln -s $INSTALLATIONSPFAD/openhsr_connect/resources/openhsr-connect /usr/lib/cups/backend/openhsr-connect
 ```
 
 Zudem müssen die Berechtigungen angepasst werden:
 
 ```bash
-chmod 700 /usr/lib/cups/backend/hsr-email-print
-chown root:root /usr/lib/cups/backend/hsr-email-print
+chmod 700 /usr/lib/cups/backend/openhsr-connect
+chown root:root /usr/lib/cups/backend/openhsr-connect
 ```
 
 Nun muss auch ein Drucker eingerichtet werden.
@@ -25,7 +25,7 @@ Nun muss auch ein Drucker eingerichtet werden.
 lpstat -a openhsr-connect 2&> /dev/null
 if [ $? -ne 0 ]; then
     echo "Adding printer openhsr-connect"
-    lpadmin -p openhsr-connect -E -v openhsr-connect:/tmp -P $INSTALLATIONSPFAD/scripts/Generic-PostScript_Printer-Postscript.ppd
+    lpadmin -p openhsr-connect -E -v openhsr-connect:/tmp -P $INSTALLATIONSPFAD/openhsr_connect/resources/Generic-PostScript_Printer-Postscript.ppd
 fi
 ```
 
