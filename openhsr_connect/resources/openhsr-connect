@@ -12,7 +12,7 @@ from pwd import getpwnam
 def main():
     # Print "device discovery" if called with no arguments
     if len(sys.argv) == 1:
-        print('direct hsr-email-print "Unknown" "Print at HSR"')
+        print('direct openhsr-connect "Unknown" "Print at HSR"')
         sys.exit(0)
 
     # Script must be alled with exactly 6 or 7 arguments
