@@ -183,21 +183,21 @@ def sync_tree(connection, repo_name, source, destination, rel_path, excludes, ca
         for filename in fileset:
             # TODO: handle recursively in case a whole directory is deleted
             del cache[filename]
-            rel_path = os.path.join(rel_path, filename)
-            full_path = os.path.join(destination, rel_path)
-            logger.debug('%s: %s has been deleted on remote' % (repo_name, rel_path))
+            relative_path = os.path.join(rel_path, filename)
+            full_path = os.path.join(destination, relative_path)
+            logger.debug('%s: %s has been deleted on remote' % (repo_name, relative_path))
             if os.path.exists(full_path):
                 conflict_handling = config['conflict-handling']['remote-deleted']
                 if conflict_handling == 'ask':
                     question = ("%s has been deleted on remote. "
                                 "Do you want to delete your local copy?")
-                    answer = ask_question(question % os.path.join(repo_name, rel_path))
+                    answer = ask_question(question % os.path.join(repo_name, relative_path))
                     if answer is False:
-                        return
+                        continue
                 elif conflict_handling != 'delete':
-                    return
+                    continue
 
-                logger.info('%s: %s will be removed' % (repo_name, rel_path))
+                logger.info('%s: %s will be removed' % (repo_name, relative_path))
                 remove_tree(full_path)
 
 
