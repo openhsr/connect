@@ -7,6 +7,7 @@ from .exceptions import PasswordException, ConfigurationException
 import jsonschema
 
 logger = logging.getLogger('openhsr_connect.config')
+PATH_CONFIG = '~/.config/openhsr-connect.yaml'
 
 
 DEFAULT_CONFIG = """
@@ -110,7 +111,7 @@ def load_config(raise_if_incomplete=False):
     """
     Loads the user configuration and creates the default configuration if it does not yet exist.
     """
-    config_path = os.path.expanduser('~/.config/openhsr-connect.yaml')
+    config_path = os.path.expanduser(PATH_CONFIG)
 
     # create default config if it does not yet exist
     if not os.path.exists(config_path):
@@ -184,8 +185,7 @@ def set_password(config, password=None):
 
 def edit(config):
     editor = os.getenv('EDITOR')
-    config_path = os.path.expanduser('~/.config/openhsr-connect.yaml')
+    config_path = os.path.expanduser(PATH_CONFIG)
     if editor is None:
         editor = input('Welchen Editor möchtest du benutzen? ')
-        logger.warning(editor)
     os.system('%s %s' % (editor, config_path))

@@ -59,7 +59,6 @@ def main():
         logging.debug('debug stuff...')
 
         if arguments['help']:
-            logger.warning('test')
             webbrowser.open('https://github.com/openhsr/connect/tree/master/docs')
         if arguments['update-password']:
             configuration.set_password(config)
