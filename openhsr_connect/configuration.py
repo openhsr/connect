@@ -180,3 +180,12 @@ def set_password(config, password=None):
     if password is None:
         password = getpass.getpass('Dein HSR-Kennwort (wird sicher im Keyring gespeichert): ')
     keyring.set_password('openhsr-connect', config['login']['username'], password)
+
+
+def edit(config):
+    editor = os.getenv('EDITOR')
+    config_path = os.path.expanduser('~/.config/openhsr-connect.yaml')
+    if editor is None:
+        editor = input('Welchen Editor möchtest du benutzen? ')
+        logger.warning(editor)
+    os.system('%s %s' % (editor, config_path))
