@@ -5,6 +5,7 @@ Usage:
   openhsr-connect update-password
   openhsr-connect daemon [-d | --daemonize] [-q | -v]
   openhsr-connect help
+  openhsr-connect edit
   openhsr-connect -h | --help
   openhsr-connect --version
 
@@ -47,7 +48,7 @@ def main():
     try:
         logger.setLevel(logging.INFO)
         arguments = docopt(__doc__, version='openhsr-connect %s' % __VERSION__)
-        logger.warning('WARNUNG: NOCH IST DIESE SOFTWARE IN ENTWICKLUNG - ALSO NICHT FÜR'
+        logger.warning('WARNUNG: NOCH IST DIESE SOFTWARE IN ENTWICKLUNG - ALSO NICHT FÜR '
                        'DEN PRODUKTIVEN EINSATZ GEEIGNET!')
         if arguments['--verbose']:
             logger.setLevel(logging.DEBUG)
@@ -61,6 +62,8 @@ def main():
             webbrowser.open('https://github.com/openhsr/connect/tree/master/docs')
         if arguments['update-password']:
             configuration.set_password(config)
+        if arguments['edit']:
+            configuration.edit(config)
         if arguments['sync']:
             if arguments['--local-changes']:
                 if arguments['--local-changes'] not in ['ask', 'delete', 'keep']:
