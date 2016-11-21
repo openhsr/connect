@@ -1,4 +1,4 @@
-from openhsr_connect import cli
+from openhsr_connect import __main__
 
 
 def test_cli_demo():

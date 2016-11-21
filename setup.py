@@ -23,7 +23,7 @@ setup(
     test_suite='tests',
     entry_points={
         'console_scripts':
-            ['openhsr-connect = openhsr_connect.cli:main']
+            ['openhsr-connect = openhsr_connect.__main__:main']
     },
 
     classifiers=[
