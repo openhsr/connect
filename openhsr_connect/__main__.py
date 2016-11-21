@@ -2,18 +2,18 @@
 Usage:
   openhsr-connect sync [--local-changes=(ask|overwrite|keep|makeCopy)]
       [--remote-deleted=(ask|delete|keep)] [-q | -v]
-  openhsr-connect update-password
+  X openhsr-connect update-password
   openhsr-connect daemon [-d | --daemonize] [-q | -v]
-  openhsr-connect help
-  openhsr-connect edit
-  openhsr-connect -h | --help
-  openhsr-connect --version
+  X openhsr-connect help
+  X openhsr-connect edit
+  X openhsr-connect -h | --help
+  X openhsr-connect --version
 
 Options:
-  -h --help             show this screen.
-  --version             show version.
-  -v --verbose          increase verbosity
-  -q --quiet            suppress non-error messages
+X  -h --help             show this screen.
+X  --version             show version.
+X  -v --verbose          increase verbosity
+X  -q --quiet            suppress non-error messages
   --local-changes=<a>   sync behaviour on local file modifications
                         and new remote file
                         options for <a> are: ask, overwrite, keep, makeCopy
@@ -28,7 +28,7 @@ Options:
 The configuration file is located in `~/.config/openhsr-connect.yaml`
 
 """
-from docopt import docopt
+import click
 import traceback
 import os
 import jsonschema
@@ -44,63 +44,84 @@ from . import __VERSION__
 logger = logging.getLogger('openhsr_connect')
 
 
+@click.group()
+@click.version_option(version=__VERSION__)
+@click.option('-v', '--verbose', is_flag=True, default=False, help='increase verbosity')
+@click.option('-q', '--quiet', is_flag=True, default=False, help='suppress non-error messages')
+@click.pass_context
+def cli(ctx, verbose, quiet):
+    # TODO: PROPER LOGGING OUTPUT
+    logger.setLevel(logging.INFO)
+    if verbose:
+        logger.setLevel(logging.DEBUG)
+    if quiet:
+        logger.setLevel(logging.WARNING)
+
+    logger.warning('WARNUNG: NOCH IST DIESE SOFTWARE IN ENTWICKLUNG - ALSO NICHT FÜR '
+                   'DEN PRODUKTIVEN EINSATZ GEEIGNET!')
+
+    ctx.obj['config'] = configuration.load_config()
+
+
+@click.command(name='update-password')
+@click.pass_context
+def update_password(ctx):
+    configuration.set_password(ctx.obj['config'])
+
+
+@click.command()
+@click.option('--daemonize', is_flag=True, default=False)
+@click.pass_context
+def daemon(ctx, daemonize):
+    if daemonize:
+        try:
+            pid = os.fork()
+            if pid > 0:
+                logger.info('Forked to background!')
+                sys.exit(0)
+        except OSError as e:
+            sys.stderr.write("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror), file=sys.stderr)
+            sys.exit(1)
+
+    user_daemon.create_socket()
+
+
+@click.command('sync')
+@click.option('--local-changes', type=click.Choice(['ask', 'overwrite', 'keep', 'makeCopy']))
+@click.option('--remote-deleted', type=click.Choice(['ask', 'delete', 'keep']))
+@click.pass_context
+def sync_command(ctx, local_changes, remote_deleted):
+    if local_changes:
+        ctx.obj['config']['sync']['conflict_handling']['local-changes'] = local_changes
+    if remote_deleted:
+        ctx.obj['config']['sync']['conflict_handling']['remote-deleted'] = remote_deleted
+    sync.sync(ctx.obj['config'])
+
+
+@click.command(name='help')
+@click.pass_context
+def browserhelp(ctx):
+    webbrowser.open('https://github.com/openhsr/connect/tree/master/docs')
+
+
+@click.command()
+@click.pass_context
+def edit(ctx):
+    configuration.edit(ctx.obj['config'])
+
+
 def main():
     try:
-        logger.setLevel(logging.INFO)
-        arguments = docopt(__doc__, version='openhsr-connect %s' % __VERSION__)
-        logger.warning('WARNUNG: NOCH IST DIESE SOFTWARE IN ENTWICKLUNG - ALSO NICHT FÜR '
-                       'DEN PRODUKTIVEN EINSATZ GEEIGNET!')
-        if arguments['--verbose']:
-            logger.setLevel(logging.DEBUG)
-        if arguments['--quiet']:
-            logger.setLevel(logging.WARNING)
-
-        config = configuration.load_config()
-        logging.debug('debug stuff...')
-
-        if arguments['help']:
-            webbrowser.open('https://github.com/openhsr/connect/tree/master/docs')
-        if arguments['update-password']:
-            configuration.set_password(config)
-        if arguments['edit']:
-            configuration.edit(config)
-        if arguments['sync']:
-            if arguments['--local-changes']:
-                if arguments['--local-changes'] not in ['ask', 'delete', 'keep']:
-                    logger.error('%s is not a valid value for local-changes'
-                                 % arguments['--local-changes'])
-                    sys.exit(1)
-                config['sync']['conflict_handling']['local-changes'] = arguments['--local-changes']
-            if arguments['--remote-deleted']:
-                if arguments['--remote-deleted'] not in ['ask', 'keep', 'overwrite', 'makeCopy']:
-                    logger.error('%s is not a valid value for remote-deleted'
-                                 % arguments['--remote-deleted'], file=sys.stderr)
-                    sys.exit(1)
-                config['sync']['conflict_handling']['remote-deleted'] = arguments['--remote-deleted']
-            sync.sync(config)
-        if arguments['daemon']:
-            if arguments['--daemonize']:
-                try:
-                    pid = os.fork()
-                    if pid > 0:
-                        logger.info('Forked to background!')
-                        sys.exit(0)
-                except OSError as e:
-                        sys.stderr.write("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror), file=sys.stderr)
-                        sys.exit(1)
-            user_daemon.create_socket()
-    except jsonschema.exceptions.ValidationError as e:
-        logger.error('Your configuration file is invalid:')
-        logger.error(e.message)
-        sys.exit(1)
-    except ConnectException as e:
-        logger.error(e)
-        sys.exit(1)
+        cli.add_command(sync_command)
+        cli.add_command(update_password)
+        cli.add_command(daemon)
+        cli.add_command(edit)
+        cli.add_command(browserhelp)
+        cli(obj={}, standalone_mode=False)
     except Exception as e:
-        traceback.print_exc()
-        logger.error('\n\nopenhsr-connect has crashed :(')
-        logger.error('Please report at https://github.com/openhsr/connect/issues/')
-        sys.exit(1)
+        logger.error(e)
+        logger.debug(e, exc_info=True)
+        exit(1)
 
 if __name__ == '__main__':
     main()
