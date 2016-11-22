@@ -50,13 +50,7 @@ logger = logging.getLogger('openhsr_connect')
 @click.option('-q', '--quiet', is_flag=True, default=False, help='suppress non-error messages')
 @click.pass_context
 def cli(ctx, verbose, quiet):
-    # TODO: PROPER LOGGING OUTPUT
-    logger.setLevel(logging.INFO)
-    if verbose:
-        logger.setLevel(logging.DEBUG)
-    if quiet:
-        logger.setLevel(logging.WARNING)
-
+    setup_logging(verbose, quiet)
     logger.warning('WARNUNG: NOCH IST DIESE SOFTWARE IN ENTWICKLUNG - ALSO NICHT FÜR '
                    'DEN PRODUKTIVEN EINSATZ GEEIGNET!')
 
@@ -108,6 +102,21 @@ def browserhelp(ctx):
 @click.pass_context
 def edit(ctx):
     configuration.edit(ctx.obj['config'])
+
+
+def setup_logging(verbose, quiet):
+    logger.setLevel(logging.INFO)
+    ch = logging.StreamHandler()
+    formatter = logging.Formatter('%(message)s')
+    if verbose and not quiet:
+        logger.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('[%(levelname)-7s] %(message)s')
+    if quiet:
+        logger.setLevel(logging.WARNING)
+
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    logger.debug("Setting up logging complete")
 
 
 def main():
