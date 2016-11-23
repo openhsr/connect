@@ -14,7 +14,7 @@ from . import __VERSION__
 logger = logging.getLogger('openhsr_connect')
 
 
-@click.group()
+@click.group(context_settings={'help_option_names': ['-h', '--help']})
 @click.version_option(version=__VERSION__)
 @click.option('-v', '--verbose', is_flag=True, default=False, help='increase verbosity')
 @click.option('-q', '--quiet', is_flag=True, default=False, help='suppress non-error messages')
@@ -62,7 +62,7 @@ def sync_command(ctx, local_changes, remote_deleted):
     sync.sync(ctx.obj['config'])
 
 
-@click.command(name='help')
+@click.command(name='help', help="Open the Documentation in the Browser")
 @click.pass_context
 def browserhelp(ctx):
     webbrowser.open('https://github.com/openhsr/connect/tree/master/docs')
