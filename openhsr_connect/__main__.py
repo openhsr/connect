@@ -1,33 +1,3 @@
-"""openhsr-connect
-Usage:
-  openhsr-connect sync [--local-changes=(ask|overwrite|keep|makeCopy)]
-      [--remote-deleted=(ask|delete|keep)] [-q | -v]
-  X openhsr-connect update-password
-  openhsr-connect daemon [-d | --daemonize] [-q | -v]
-  X openhsr-connect help
-  X openhsr-connect edit
-  X openhsr-connect -h | --help
-  X openhsr-connect --version
-
-Options:
-X  -h --help             show this screen.
-X  --version             show version.
-X  -v --verbose          increase verbosity
-X  -q --quiet            suppress non-error messages
-  --local-changes=<a>   sync behaviour on local file modifications
-                        and new remote file
-                        options for <a> are: ask, overwrite, keep, makeCopy
-                        where "keep" keeps only your local File
-                        and "makeCopy" keeps both local and remote Files
-                        The default value is loaded from the configuration file.
-  --remote-deleted=<a>  sync behaviour on remote file removes.
-                        Options for <a> are: ask, delete, keep.
-                        The default value is loaded from the configuration file.
-  -d --daemonize        runs daemon in background
-
-The configuration file is located in `~/.config/openhsr-connect.yaml`
-
-"""
 import click
 import traceback
 import os
