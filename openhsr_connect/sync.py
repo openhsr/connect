@@ -94,6 +94,7 @@ def handle_local_change(full_local_path, rel_remote_path, config):
         new_path = get_copy_filename(full_local_path)
         logger.debug("Rename local file %s to %s" % (full_local_path, new_path))
         os.rename(full_local_path, new_path)
+    return 'overwrite'
 
 
 def ask_question(question):
@@ -156,7 +157,7 @@ def sync_tree(connection, repo_name, source, destination, rel_path, excludes, ca
             remote_digest = "%s-%s" % (shared_file.file_size,
                                        shared_file.last_write_time)
             if os.path.exists(full_local_path) and filename in cache:
-                if remote_digest == cache[filename]:
+                if remote_digest == cache[filename]['hash']:
                     logger.debug(
                         '%s: File %s has not changed' % (repo_name, relative_remote_path))
                     continue
@@ -165,12 +166,10 @@ def sync_tree(connection, repo_name, source, destination, rel_path, excludes, ca
                         full_local_path, relative_remote_path,
                         config['conflict-handling'])
                     if (handling_result == 'keep'):
-                        cache[filename] = remote_digest
-                        continue
-                    elif (handling_result == 'skip'):
+                        cache[filename] = {'hash': remote_digest, 'ignore': True}
                         continue
 
-            cache[filename] = remote_digest
+            cache[filename] = {'hash': remote_digest, 'ignore': False}
             full_remote_path = os.path.join(remote_path, filename)
             download_file(connection, full_remote_path, full_local_path)
 
@@ -181,8 +180,6 @@ def sync_tree(connection, repo_name, source, destination, rel_path, excludes, ca
 
     if fileset:  # if fileset not empty, remote files / folders have been deleted
         for filename in fileset:
-            # TODO: handle recursively in case a whole directory is deleted
-            del cache[filename]
             relative_path = os.path.join(rel_path, filename)
             full_path = os.path.join(destination, relative_path)
             logger.debug('%s: %s has been deleted on remote' % (repo_name, relative_path))
@@ -193,12 +190,15 @@ def sync_tree(connection, repo_name, source, destination, rel_path, excludes, ca
                                 "Do you want to delete your local copy?")
                     answer = ask_question(question % os.path.join(repo_name, relative_path))
                     if answer is False:
+                        cache[filename]['ignore'] = True
                         continue
                 elif conflict_handling != 'delete':
+                    cache[filename]['ignore'] = True
                     continue
 
                 logger.info('%s: %s will be removed' % (repo_name, relative_path))
                 remove_tree(full_path)
+            del cache[filename]
 
 
 def sync(config):
