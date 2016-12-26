@@ -91,7 +91,9 @@ def handle_local_change(full_local_path, rel_remote_path, config):
     elif handling_config == 'overwrite':
         logger.info("File %s will be overwritten" % full_local_path)
     elif handling_config == 'makeCopy':
-        rename_file(full_local_path)
+        new_path = get_copy_filename(full_local_path)
+        logger.debug("Rename local file %s to %s" % (full_local_path, new_path))
+        os.rename(full_local_path, new_path)
 
 
 def ask_question(question):
@@ -111,12 +113,10 @@ def download_file(connection, remote, local):
         logger.debug('Downloading of file %s complete!' % remote)
 
 
-def rename_file(path):
+def get_copy_filename(path):
     date = datetime.now().strftime("%y%m%d%H%M")
     filename, extension = os.path.splitext(path)
-    new_path = "%s-local-%s%s" % (filename, date, extension)
-    logger.debug("Rename local file %s to %s" % (path, new_path))
-    os.rename(path, new_path)
+    return "%s-local-%s%s" % (filename, date, extension)
 
 
 def remove_tree(filepath):
