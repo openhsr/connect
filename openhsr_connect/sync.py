@@ -1,4 +1,5 @@
 import os
+import os.path
 from datetime import datetime
 import socket
 import logging
@@ -208,7 +209,7 @@ def sync(config):
         logger.info("No repositories in config")
     for name, repository in repositories.items():
         source = repository['remote-dir']
-        destination = repository['local-dir']
+        destination = os.path.expanduser(repository['local-dir'])
         if not os.path.exists(destination):
             os.makedirs(destination)
         logger.info('Starting sync: %s -> %s' % (source, destination))
