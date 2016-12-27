@@ -5,8 +5,9 @@ import random
 import builtins
 from openhsr_connect import sync, configuration
 
-TEST_FOLDER = 'sync-test2'
+TEST_FOLDER = 'sync-test'
 TEST_SHARE = 'scratch'
+DEFAULT_CONTENT = 'original content'
 
 
 def remove_smb_tree(share, connection, path):
@@ -39,7 +40,7 @@ def create_remote_structure(connection):
     connection.createDirectory(TEST_SHARE, os.path.join(TEST_FOLDER, 'dir2'))
     connection.createDirectory(TEST_SHARE, os.path.join(TEST_FOLDER, 'dir3'))
     for n in range(1, 4):
-        for filename in generate_files(n, 'original content'):
+        for filename in generate_files(n, DEFAULT_CONTENT):
             with open(filename, 'rb') as file:
                 path = '%s/dir%s/%s' % (TEST_FOLDER, n, filename)
                 connection.storeFile(TEST_SHARE, path, file)
@@ -153,6 +154,30 @@ def check_remote_deleted(config, connection, monkeypatch, conflict_handling, ans
         assert os.path.exists(os.path.join(TEST_FOLDER, 'dir2', 'file2.txt'))
 
 
+def check_existing_local_files(config, connection, conflict_handling):
+    config['sync']['conflict-handling']['local-changes'] = conflict_handling
+    dirname = os.path.join(TEST_FOLDER, 'dir1')
+    os.makedirs(dirname)
+    for filename in generate_files(2, 'existing file'):
+        os.rename(filename, os.path.join(dirname, filename))
+    check_basic_sync(config, connection)
+
+    if conflict_handling == 'keep':
+        expected_content = 'existing file'
+    elif conflict_handling == 'overwrite':
+        expected_content = DEFAULT_CONTENT
+    else:
+        raise NotImplementedError('conflict_handling must be keep or overwrite')
+
+    assert_file_content(os.path.join(TEST_FOLDER, 'dir1', 'file1.txt'), expected_content)
+
+    # on a second sync, no question should be asked
+    config['sync']['conflict-handling']['local-changes'] = 'ask'
+    sync.sync(config)
+    assert_local_file_structure()
+    assert_file_content(os.path.join(TEST_FOLDER, 'dir1', 'file1.txt'), expected_content)
+
+
 # ------- Pytest Test Methods ------- #
 
 
@@ -194,3 +219,13 @@ def test_remote_deleted_delete(config, connection, monkeypatch):
 
 def test_remote_deleted_keep(config, connection, monkeypatch):
     check_remote_deleted(config, connection, monkeypatch, 'keep')
+
+
+def test_keep_existing_local_files(config, connection):
+    check_existing_local_files(config, connection, 'keep')
+
+
+def test_overwrite_existing_local_files(config, connection):
+    check_existing_local_files(config, connection, 'overwrite')
+
+# TODO: Tests for excludes
