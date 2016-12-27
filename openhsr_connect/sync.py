@@ -76,17 +76,17 @@ def create_local_digest(filepath):
     return "%s-%s" % (os.path.getsize(filepath), os.path.getmtime(filepath))
 
 
-def file_differs(filepath, remote_digest):
+def file_has_local_changes(filepath, remote_digest):
     return not remote_digest == create_local_digest(filepath)
 
 
 def handle_local_change(full_local_path, rel_remote_path, config):
-    logger.debug('File %s has changed locally' % rel_remote_path)
+    logger.debug('File %s has changed locally or it has been added to the index' % rel_remote_path)
     handling_config = config['local-changes']
     if handling_config == 'keep':
         return 'keep'
     elif handling_config == 'ask':
-        question = "Do you want to overwrite %s with the new version?"
+        question = "Do you want to overwrite %s with the version from the server?"
         if not ask_question(question % full_local_path):
             return 'keep'
         logger.debug("File %s will be overwritten" % full_local_path)
@@ -192,23 +192,27 @@ def sync_tree(connection, repo_name, source, destination, rel_path, excludes, ca
             remote_digest = "%s-%s" % (shared_file.file_size,
                                        shared_file.last_write_time)
             if os.path.exists(full_local_path):
-                if cache[filename]['ignore']:
-                    continue
                 if filename not in cache:
                     # already existing local file
+                    logger.info('%s: Add exising file to index: %s' %
+                                (repo_name, relative_remote_path))
                     cache[filename] = cache_entry(create_local_digest(full_local_path))
+                    is_existing_file = True
+                if cache[filename]['ignore']:
+                    continue
                 if 'hash' not in cache[filename]:  # For backwards compatibility
                     cache[filename] = cache_entry(cache[filename])
                 if remote_digest == cache[filename]['hash']:
                     logger.debug(
                         '%s: File %s has not changed' % (repo_name, relative_remote_path))
                     continue
-                if file_differs(full_local_path, cache[filename]['hash']):
+                if file_has_local_changes(full_local_path, cache[filename]['hash']) \
+                        or is_existing_file:
                     handling_result = handle_local_change(
                         full_local_path, relative_remote_path,
                         config['conflict-handling'])
-                    if (handling_result == 'keep'):
-                        cache[filename] = cache_entry(remote_digest, ignore=True)
+                    if handling_result == 'keep':
+                        cache[filename]['ignore'] = True
                         continue
 
             cache[filename] = cache_entry(remote_digest)
