@@ -198,10 +198,11 @@ def sync_tree(connection, repo_name, source, destination, rel_path, excludes, ca
                                 (repo_name, relative_remote_path))
                     cache[filename] = cache_entry(create_local_digest(full_local_path))
                     is_existing_file = True
+                # rebuild cache entry from an old version with new structure if necessary
+                if 'hash' not in cache[filename]:
+                    cache[filename] = cache_entry(cache[filename])
                 if cache[filename]['ignore']:
                     continue
-                if 'hash' not in cache[filename]:  # For backwards compatibility
-                    cache[filename] = cache_entry(cache[filename])
                 if remote_digest == cache[filename]['hash']:
                     logger.debug(
                         '%s: File %s has not changed' % (repo_name, relative_remote_path))
