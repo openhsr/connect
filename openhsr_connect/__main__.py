@@ -76,7 +76,7 @@ def edit(ctx):
 
 def setup_logging(verbose, quiet):
     logger.setLevel(logging.INFO)
-    ch = logging.StreamHandler()
+    ch = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter('%(message)s')
     if verbose and not quiet:
         logger.setLevel(logging.DEBUG)
