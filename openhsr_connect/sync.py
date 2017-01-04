@@ -72,12 +72,26 @@ def exclude_file(path, filename, excludes):
     return False
 
 
-def create_local_digest(filepath):
-    return "%s-%s" % (os.path.getsize(filepath), os.path.getmtime(filepath))
+def create_local_hash(filepath):
+    # parse mtime to int (seconds) to avoid precision errors
+    mtime = int(os.path.getmtime(filepath))
+    return "%s-%s" % (os.path.getsize(filepath), mtime)
 
 
-def file_has_local_changes(filepath, remote_digest):
-    return not remote_digest == create_local_digest(filepath)
+def create_remote_hash(shared_file):
+    # parse last_write_time to int (seconds) to avoid precision errors
+    mtime = int(shared_file.last_write_time)
+    return "%s-%s" % (shared_file.file_size, mtime)
+
+
+def timestamp_to_int(old_hash):
+    digest = old_hash.split('-')
+    time = int(float(digest[1]))
+    return '%s-%s' % (digest[0], time)
+
+
+def file_has_local_changes(filepath, remote_hash):
+    return remote_hash != create_local_hash(filepath)
 
 
 def handle_local_change(full_local_path, rel_remote_path, config):
@@ -160,8 +174,8 @@ def remove_tree(filepath):
         os.rmdir(filepath)
 
 
-def cache_entry(hash, ignore=False):
-    return {'hash': hash, 'ignore': ignore}
+def cache_entry(digest, ignore=False):
+    return {'hash': digest, 'ignore': ignore}
 
 
 def sync_tree(connection, repo_name, source, destination, rel_path, excludes, cache, config):
@@ -189,21 +203,22 @@ def sync_tree(connection, repo_name, source, destination, rel_path, excludes, ca
                 os.path.join(rel_path, filename), excludes,
                 cache[filename], config)
         else:
-            remote_digest = "%s-%s" % (shared_file.file_size,
-                                       shared_file.last_write_time)
+            remote_hash = create_remote_hash(shared_file)
             if os.path.exists(full_local_path):
                 if filename not in cache:
                     # already existing local file
-                    logger.info('%s: Add exising file to index: %s' %
+                    logger.info('%s: Add existing file to index: %s' %
                                 (repo_name, relative_remote_path))
-                    cache[filename] = cache_entry(create_local_digest(full_local_path))
+                    cache[filename] = cache_entry(create_local_hash(full_local_path))
                     is_existing_file = True
                 # rebuild cache entry from an old version with new structure if necessary
                 if 'hash' not in cache[filename]:
-                    cache[filename] = cache_entry(cache[filename])
+                    # convert timestamp to int, old timestamps were floats
+                    digest = timestamp_to_int(cache[filename])
+                    cache[filename] = cache_entry(digest)
                 if cache[filename]['ignore']:
                     continue
-                if remote_digest == cache[filename]['hash']:
+                if remote_hash == cache[filename]['hash']:
                     logger.debug(
                         '%s: File %s has not changed' % (repo_name, relative_remote_path))
                     continue
@@ -216,7 +231,7 @@ def sync_tree(connection, repo_name, source, destination, rel_path, excludes, ca
                         cache[filename]['ignore'] = True
                         continue
 
-            cache[filename] = cache_entry(remote_digest)
+            cache[filename] = cache_entry(remote_hash)
             full_remote_path = os.path.join(remote_path, filename)
             download_file(connection, full_remote_path, full_local_path)
 
