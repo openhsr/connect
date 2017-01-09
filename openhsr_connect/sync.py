@@ -205,6 +205,7 @@ def sync_tree(connection, repo_name, source, destination, rel_path, excludes, ca
         else:
             remote_hash = create_remote_hash(shared_file)
             if os.path.exists(full_local_path):
+                is_existing_file = False
                 if filename not in cache:
                     # already existing local file
                     logger.info('%s: Add existing file to index: %s' %
