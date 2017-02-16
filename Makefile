@@ -10,7 +10,7 @@ BUILDDIR=./build/$(DISTRIBUTION)/$(VERSION)
 DOCKERFILE=$(BUILDDIR)/Dockerfile
 
 .DEFAULT:
-	[ -f $(DOCKERFILE) ] || echo "Error, no distribution with this name: $(DOCKERFILE)" >&2 && exit 1
+	[ -f $(DOCKERFILE) ] || (echo "Error, no distribution with this name: $(DOCKERFILE)" >&2 && exit 1)
 	# Build container
 	docker build \
 	    -t "openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
