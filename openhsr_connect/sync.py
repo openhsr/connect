@@ -5,6 +5,7 @@ import socket
 import logging
 import json
 import fnmatch
+import shutil
 from openhsr_connect import configuration
 from openhsr_connect import exceptions
 
@@ -120,15 +121,6 @@ def get_copy_filename(path):
     return "%s-local-%s%s" % (filename, date, extension)
 
 
-def remove_tree(filepath):
-    if os.path.isfile(filepath):
-        os.remove(filepath)
-    else:
-        for subfile in os.listdir(filepath):
-            remove_tree(os.path.join(filepath, subfile))
-        os.rmdir(filepath)
-
-
 def sync_tree(connection, repo_name, source, destination, rel_path, excludes, cache, config):
     fileset = set(cache)
     remote_path = os.path.join(source, rel_path)
@@ -199,7 +191,7 @@ def sync_tree(connection, repo_name, source, destination, rel_path, excludes, ca
                     continue
 
                 logger.info('%s: %s will be removed' % (repo_name, relative_path))
-                remove_tree(full_path)
+                shutil.rmtree(full_path)
 
 
 def sync(config):
