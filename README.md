@@ -1,4 +1,6 @@
 # open\HSR Connect
+[![Updates](https://pyup.io/repos/github/openhsr/connect/shield.svg)](https://pyup.io/repos/github/openhsr/connect/)
+[![Build Status](https://travis-ci.org/openhsr/connect.svg?branch=master)](https://travis-ci.org/openhsr/connect)
 
 WARNUNG: NOCH IST DIESE SOFTWARE IN ENTWICKLUNG - ALSO NICHT FÜR DEN PRODUKTIVEN EINSATZ GEEIGNET!
 
