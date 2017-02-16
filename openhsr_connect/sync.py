@@ -6,8 +6,8 @@ import logging
 import json
 import fnmatch
 import shutil
-from . import configuration
-from . import exceptions
+from openhsr_connect import configuration
+from openhsr_connect import exceptions
 
 from smb.SMBConnection import SMBConnection
 from smb.smb_structs import ProtocolError

@@ -3,9 +3,9 @@ import socket
 import json
 import logging
 
-from . import printing
-from .exceptions import PrintException
-from . import configuration
+from openhsr_connect import printing
+from openhsr_connect.exceptions import PrintException
+from openhsr_connect import configuration
 
 logger = logging.getLogger('openhsr_connect.print')
 

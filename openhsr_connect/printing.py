@@ -11,8 +11,8 @@ from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email import encoders
 
-from .exceptions import PrintException
-from .exceptions import PasswordException
+from openhsr_connect.exceptions import PrintException
+from openhsr_connect.exceptions import PasswordException
 
 # These values are hard-coded to be updated easily in case of a change in the HSR infrastructure.
 reciever = 'mobileprint@hsr.ch'
