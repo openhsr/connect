@@ -1,1 +1,0 @@
-Search.setIndex({docnames:["index"],envversion:51,filenames:["index.rst"],objects:{},objnames:{},objtypes:{},terms:{modulindex:0,stichwortverzeichnis:0,such:0},titles:["Welcome to openHSR Connect&#8217;s documentation!"],titleterms:{and:0,connect:0,documentation:0,indic:0,openhsr:0,tabl:0,welcom:0}})
