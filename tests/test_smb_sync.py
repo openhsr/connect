@@ -3,7 +3,8 @@ import os
 import string
 import random
 import builtins
-from openhsr_connect import sync, configuration
+import shutil
+from openhsr_connect import smb_sync, configuration
 
 TEST_FOLDER = 'sync-test'
 TEST_SHARE = 'scratch'
@@ -48,14 +49,19 @@ def create_remote_structure(connection):
 
 
 @pytest.fixture
-def connection(config, monkeypatch):
-    monkeypatch.setattr(sync, 'SMB_SHARE_NAME', TEST_SHARE)
-    new_connection = sync.smb_login(config)
+def create_smb_sync(config):
+    return smb_sync.SMB_Sync(config)
+
+
+@pytest.fixture
+def connection(config, create_smb_sync, monkeypatch):
+    monkeypatch.setattr(smb_sync.SMB_Sync, 'SMB_SHARE_NAME', TEST_SHARE)
+    new_connection = create_smb_sync.connect()
     new_connection.createDirectory(TEST_SHARE, TEST_FOLDER)
     yield new_connection
     # tear down
     remove_smb_tree(TEST_SHARE, new_connection, TEST_FOLDER)
-    sync.remove_tree(TEST_FOLDER)
+    shutil.rmtree(TEST_FOLDER)
     new_connection.close()
 
 
@@ -96,8 +102,9 @@ def assert_file_content(filename, test_string):
 
 
 def check_basic_sync(config, connection):
+    syncer = create_smb_sync(config)
     create_remote_structure(connection)
-    sync.sync(config)
+    syncer.sync()
     assert_local_file_structure()
 
 
@@ -111,7 +118,8 @@ def check_local_changes(config, connection, monkeypatch, conflict_handling, answ
     with open(os.path.join(TEST_FOLDER, 'dir1', 'file1.txt'), 'a') as fp:
         fp.write(TEST_STR_LOCAL)
     # nothing has changed on the remote yet, so nothing should change
-    sync.sync(config)
+    syncer = create_smb_sync(config)
+    syncer.sync()
     assert_local_file_structure()
     # Change remote file
     for filename in generate_files(1, TEST_STR_REMOTE):
@@ -121,7 +129,8 @@ def check_local_changes(config, connection, monkeypatch, conflict_handling, answ
 
     if conflict_handling == 'ask':
         monkeypatch.setattr(builtins, 'input', lambda x: answer)
-    sync.sync(config)
+    syncer = create_smb_sync(config)
+    syncer.sync()
     if conflict_handling == 'keep' or answer == 'n':
         expected_content = TEST_STR_LOCAL
     elif conflict_handling == 'overwrite' or conflict_handling == 'makeCopy' or answer == 'y':
@@ -130,7 +139,7 @@ def check_local_changes(config, connection, monkeypatch, conflict_handling, answ
     assert_file_content(file1_path, expected_content)
 
     if conflict_handling == 'makeCopy':
-        expected_name_path = sync.get_copy_filename(file1_path)
+        expected_name_path = syncer.get_copy_filename(file1_path)
         assert os.path.exists(expected_name_path)
         assert_file_content(expected_name_path, TEST_STR_LOCAL)
 
@@ -144,7 +153,8 @@ def check_remote_deleted(config, connection, monkeypatch, conflict_handling, ans
 
     if conflict_handling == 'ask':
         monkeypatch.setattr(builtins, 'input', lambda x: answer)
-    sync.sync(config)
+    syncer = create_smb_sync(config)
+    syncer.sync()
 
     if conflict_handling == 'keep' or answer == 'n':
         assert_local_file_structure()
@@ -173,7 +183,8 @@ def check_existing_local_files(config, connection, conflict_handling):
 
     # on a second sync, no question should be asked
     config['sync']['conflict-handling']['local-changes'] = 'ask'
-    sync.sync(config)
+    syncer = create_smb_sync(config)
+    syncer.sync()
     assert_local_file_structure()
     assert_file_content(os.path.join(TEST_FOLDER, 'dir1', 'file1.txt'), expected_content)
 

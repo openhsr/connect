@@ -9,6 +9,7 @@ from .exceptions import ConnectException
 from . import configuration
 from . import user_daemon
 from . import sync
+from . import smb_sync
 from . import __VERSION__
 
 logger = logging.getLogger('openhsr_connect')
@@ -59,7 +60,8 @@ def sync_command(ctx, local_changes, remote_deleted):
         ctx.obj['config']['sync']['conflict_handling']['local-changes'] = local_changes
     if remote_deleted:
         ctx.obj['config']['sync']['conflict_handling']['remote-deleted'] = remote_deleted
-    sync.sync(ctx.obj['config'])
+    smb_syncer = smb_sync.SMB_Sync(ctx.obj['config'])
+    smb_syncer.sync()
 
 
 @click.command(name='help', help="Open the Documentation in the Browser")
