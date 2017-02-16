@@ -1,4 +1,4 @@
-#!/bin/
+#!/bin/bash
 set -e
 # Required env variables:
 # - DOCKER_UID: UID of your desktop user
@@ -9,7 +9,7 @@ groupadd -g ${DOCKER_GID} user
 useradd --home /build -u ${DOCKER_UID} -g ${DOCKER_GID} -M user
 mkdir -p /source/{dist,build,openhsr_connect.egg-info} /repo /build/.gnupg
 chmod 700 /build/.gnupg
-chown -R ${DOCKER_UID}:${DOCKER_GID} /buil /repo /source
+chown -R ${DOCKER_UID}:${DOCKER_GID} /build /repo /source
 
 # Packages
 apt-get update

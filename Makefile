@@ -6,7 +6,7 @@ DOCKER_GID=1000
 TARGET=$(subst /, ,$@)
 DISTRIBUTION=$(word 1,$(TARGET))
 VERSION=$(word 2,$(TARGET))
-BUILDDIR=./build/$(DISTRIBUTION)/$(VERSION)
+BUILDDIR=./packaging/$(DISTRIBUTION)/$(VERSION)
 DOCKERFILE=$(BUILDDIR)/Dockerfile
 
 .DEFAULT:
@@ -15,10 +15,10 @@ DOCKERFILE=$(BUILDDIR)/Dockerfile
 	docker build \
 	    -t "openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
 	    --build-arg DOCKER_UID=$(DOCKER_UID) --build-arg DOCKER_GID=$(DOCKER_GID) \
-	    -f $(DOCKERFILE) $(BUILDDIR)
+		--build-arg VERSION=$(VERSION) --build-arg DISTRIBUTION=$(DISTRIBUTION) \
+	    -f $(DOCKERFILE) .
 	# Build connect, dependencies and repositories
-	docker run --name "openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
-	    --volume=$(shell pwd):/source/:ro \
+	docker run --rm --name "openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
 		--volume=$(shell pwd)/dist/$(DISTRIBUTION)/$(VERSION)/:/repo/:rw \
 	    --env GPGKEY \
 	    openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)
