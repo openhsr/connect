@@ -23,6 +23,7 @@ GPG_KEY=$(shell PASSWORD_STORE_DIR=$(PASS_DIR) pass show connect/signkey)
 	    -f $(DOCKERFILE) .
 
 	# Build connect, dependencies and repositories
+	mkdir -p $(shell pwd)/dist/$(DISTRIBUTION)/$(VERSION)/
 	GPG_KEY="$(GPG_KEY)" docker run --rm --name "openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
 		--volume=$(shell pwd)/dist/$(DISTRIBUTION)/$(VERSION)/:/repo/:rw \
 	    --env GPG_KEY \
