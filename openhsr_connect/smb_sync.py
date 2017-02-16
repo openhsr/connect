@@ -10,7 +10,7 @@ from openhsr_connect import exceptions
 
 class SMB_Sync(sync.Sync):
 
-    SMB_SERVER_NAME = 'c206.hsr.ch'
+    SMB_SERVER_NAME = 'svm-c213.hsr.ch'
     SMB_SHARE_NAME = 'skripte'
     SMB_DOMAIN = 'HSR'
     SMB_SERVER_PORT = 445
@@ -28,7 +28,7 @@ class SMB_Sync(sync.Sync):
         client_name = socket.gethostname()
         connection = SMBConnection(
             username, password, client_name,
-            self.SMB_SERVER_NAME, domain=self.SMB_DOMAIN, use_ntlm_v2=False)
+            self.SMB_SERVER_NAME, domain=self.SMB_DOMAIN, use_ntlm_v2=False, is_direct_tcp=True)
         try:
             connect_result = connection.connect(server_ip, self.SMB_SERVER_PORT)
             if connect_result is False:
