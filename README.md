@@ -48,3 +48,9 @@ Um dir das Leben einfacher zu machen haben wir eine [Entwickler Dokumentation](h
 
 ## Maintainer Kontakt
 Wenn du mehr Informationen möchtest oder eine Frage zur Installation/Verwenung des open\HSR Connect hast kannst du dich gerne bei [Connect Support](mailto:connect@hsr.ch) melden.
+
+## Lizenz
+
+Copyright (c) 2016-present, Open\HSR.
+
+`open\HSR Connect` steht unter der [GNU Public License version 3 (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.en.html). Eine Kopie der Lizenz ist unter LICENSE.txt abgelegt.
