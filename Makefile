@@ -14,7 +14,7 @@ DOCKERFILE=$(BUILDDIR)/Dockerfile
 	# Build container
 	docker build \
 	    -t "openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
-	    --build-arg DOCKER_UID --build-arg DOCKER_GID \
+	    --build-arg DOCKER_UID=$(DOCKER_UID) --build-arg DOCKER_GID=$(DOCKER_GID) \
 	    -f $(DOCKERFILE) $(BUILDDIR)
 	# Build connect, dependencies and repositories
 	docker run --name "openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
