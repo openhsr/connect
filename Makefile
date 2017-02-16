@@ -18,7 +18,7 @@ DOCKERFILE=$(BUILDDIR)/Dockerfile
 	    -f $(DOCKERFILE) $(BUILDDIR)
 	# Build connect, dependencies and repositories
 	docker run --name "openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
-	    --volume=./:/source:ro \
-	    --volume=./dist/$(DISTRIBUTION)/$(VERSION)/:/repo:rw
+	    --volume=$(shell pwd):/source/:ro \
+		--volume=$(shell pwd)/dist/$(DISTRIBUTION)/$(VERSION)/:/repo/:rw \
 	    --env GPGKEY \
 	    openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)
