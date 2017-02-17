@@ -4,20 +4,20 @@ DOCKER_UID=1000
 DOCKER_GID=1000
 
 TARGET=$(subst /, ,$@)
-DISTRIBUTION=$(word 1,$(TARGET))
-VERSION=$(word 2,$(TARGET))
+export DISTRIBUTION=$(word 1,$(TARGET))
+export VERSION=$(word 2,$(TARGET))
 BUILDDIR=./packaging/$(DISTRIBUTION)/$(VERSION)
 DOCKERFILE=$(BUILDDIR)/Dockerfile
 PASS_DIR?=`readlink -f "./../pass" || (echo "Could not find PASS_REPOSITORY, please set it as env variable." >&2 && exit 2)`
+CONNECT_VERSION=`git describe --tags 2> /dev/null || echo "0.0.1"`
 
 .DEFAULT:
 	[ -f $(DOCKERFILE) ] || (echo "Error, no distribution with this name: $(DOCKERFILE)" >&2 && exit 1)
-	
 	# Build container
 	docker build \
 	    -t "openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
 	    --build-arg DOCKER_UID=$(DOCKER_UID) --build-arg DOCKER_GID=$(DOCKER_GID) \
-		--build-arg VERSION=$(VERSION) --build-arg DISTRIBUTION=$(DISTRIBUTION) \
+		--build-arg VERSION --build-arg DISTRIBUTION \
 	    -f $(DOCKERFILE) .
 
 	# Build connect, dependencies and repositories
@@ -26,5 +26,5 @@ PASS_DIR?=`readlink -f "./../pass" || (echo "Could not find PASS_REPOSITORY, ple
 		export GPG_KEY=`pass show connect/signkey` && \
 		docker run -ti --rm --name "openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
 		--volume=$(shell pwd)/dist/$(DISTRIBUTION)/$(VERSION)/:/repo/:rw \
-	    --env GPG_KEY \
+	    --env GPG_KEY --env CONNECT_VERSION=$(CONNECT_VERSION) \
 	    openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)
