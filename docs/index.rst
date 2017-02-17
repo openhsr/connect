@@ -14,4 +14,7 @@ Du kannst den connect verwenden um die Dateiablagen der einzelnen Fächer zu syn
    :maxdepth: 2
    :caption: Contents:
    
+   install.rst
    cli.rst
+   configuration.rst
+   
