@@ -15,7 +15,8 @@ chown -R ${DOCKER_UID}:${DOCKER_GID} /build /repo /source
 apt-get update
 
 # Python
-apt-get install -y python3 python3-pip python3-pkg-resources
+apt-get install -y python3 python3-all python3-pip python3-pkg-resources
 
 # Packaging
-apt-get install -y dpkg-dev dpkg-sig reprepro
+apt-get install -y reprepro debhelper devscripts -y
+
