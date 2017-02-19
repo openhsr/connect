@@ -5,11 +5,14 @@ import jsonschema
 import webbrowser
 import sys
 import logging
-from .exceptions import ConnectException
-from . import configuration
-from . import user_daemon
-from . import sync
-from . import __VERSION__
+
+from openhsr_connect.exceptions import ConnectException
+from openhsr_connect import configuration
+from openhsr_connect import user_daemon
+from openhsr_connect import sync
+from openhsr_connect import smb_sync
+from openhsr_connect import __VERSION__
+
 
 logger = logging.getLogger('openhsr_connect')
 
@@ -59,7 +62,8 @@ def sync_command(ctx, local_changes, remote_deleted):
         ctx.obj['config']['sync']['conflict_handling']['local-changes'] = local_changes
     if remote_deleted:
         ctx.obj['config']['sync']['conflict_handling']['remote-deleted'] = remote_deleted
-    sync.sync(ctx.obj['config'])
+    smb_syncer = smb_sync.SMB_Sync(ctx.obj['config'])
+    smb_syncer.sync()
 
 
 @click.command(name='help', help="Open the Documentation in the Browser")
@@ -76,7 +80,7 @@ def edit(ctx):
 
 def setup_logging(verbose, quiet):
     logger.setLevel(logging.INFO)
-    ch = logging.StreamHandler()
+    ch = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter('%(message)s')
     if verbose and not quiet:
         logger.setLevel(logging.DEBUG)

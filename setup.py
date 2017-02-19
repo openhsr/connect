@@ -14,12 +14,12 @@ setup(
     url="https://github.com/openhsr/connect",
     description="Die Offene HSR-Mapper Alternative",
     long_description=("For more information, please checkout the `Github Page "
-                      "<https://github.com/altcomphsr/connect>`_."),
+                      "<https://github.com/openhsr/connect>`_."),
     license="GPLv3",
     platforms=["Linux", "BSD", "MacOS"],
     include_package_data=True,
     zip_safe=False,
-    install_requires=open('./requirements.txt').read(),
+    install_requires=['pysmb', 'click', 'pyyaml', 'keyring', 'jsonschema'],
     test_suite='tests',
     entry_points={
         'console_scripts':
