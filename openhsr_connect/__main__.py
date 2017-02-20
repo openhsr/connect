@@ -3,7 +3,6 @@ import os
 import webbrowser
 import sys
 import logging
-from .exceptions import ConnectException
 from . import configuration
 from . import user_daemon
 from . import sync
@@ -57,7 +56,7 @@ def sync_command(local_changes, remote_deleted):
 
 @click.command(name='help', help="Open the Documentation in the Browser")
 def browserhelp():
-    webbrowser.open('https://github.com/openhsr/connect/tree/master/docs')
+    webbrowser.open('https://openhsr-connect.readthedocs.io/de/latest/')
 
 
 @click.command()
@@ -92,6 +91,7 @@ def main():
         logger.error(e)
         logger.debug(e, exc_info=True)
         exit(1)
+
 
 if __name__ == '__main__':
     main()
