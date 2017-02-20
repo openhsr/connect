@@ -183,7 +183,7 @@ def set_password(config, password=None):
     keyring.set_password('openhsr-connect', config['login']['username'], password)
 
 
-def edit(config):
+def edit():
     editor = os.getenv('EDITOR')
     config_path = os.path.expanduser(PATH_CONFIG)
     if editor is None:
