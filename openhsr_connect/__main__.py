@@ -3,10 +3,10 @@ import os
 import webbrowser
 import sys
 import logging
-from . import configuration
-from . import user_daemon
-from . import sync
-from . import __VERSION__
+from openhsr_connect import configuration
+from openhsr_connect import user_daemon
+from openhsr_connect import smb_sync
+from openhsr_connect import __VERSION__
 
 logger = logging.getLogger('openhsr_connect')
 
@@ -51,7 +51,8 @@ def sync_command(local_changes, remote_deleted):
         config['sync']['conflict_handling']['local-changes'] = local_changes
     if remote_deleted:
         config['sync']['conflict_handling']['remote-deleted'] = remote_deleted
-    sync.sync(config)
+    smb_syncer = smb_sync.SMB_Sync(config)
+    smb_syncer.sync()
 
 
 @click.command(name='help', help="Open the Documentation in the Browser")
