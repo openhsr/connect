@@ -28,7 +28,7 @@ endif
 	export PASSWORD_STORE_DIR=$(PASS_DIR) && \
 		export GPG_KEY=`pass show connect/signkey` && \
 		docker run -ti --rm --name "openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
-		--volume=$(shell pwd)/dist/$(DISTRIBUTION)/$(VERSION)/:/repo/:rw \
+		--volume=$(shell pwd)/dist/$(DISTRIBUTION)/:/repo/:rw \
 	    --env GPG_KEY --env CONNECT_VERSION=$(CONNECT_VERSION) \
 	    openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)
 

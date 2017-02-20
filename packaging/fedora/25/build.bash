@@ -14,7 +14,7 @@ pushd $SPECDIR >/dev/null
   fedpkg --release f${FEDORA_VERSION} local
 popd > /dev/null
 
-mkdir -p /repo/{i386,x86_64,SRPMS}
+mkdir -p /repo/${FEDORA_VERSION}/{i386,x86_64,SRPMS}
 
 ###############################################################################
 # Build pysmb
@@ -45,14 +45,14 @@ find $SPECDIR -name '*.rpm' -exec rpm --addsign {} \;
 # Repositories
 ###############################################################################
 # copy files to the repositories:
-find $SPECDIR -name '*.src.rpm' -exec cp {} /repo/SRPMS \;
+find $SPECDIR -name '*.src.rpm' -exec cp {} /repo/${FEDORA_VERSION}/SRPMS \;
 
 for arch in i386 x86_64
-  do find $SPECDIR -name '*.noarch.rpm' -exec cp {} /repo/${arch} \;
+  do find $SPECDIR -name '*.noarch.rpm' -exec cp {} /repo/${FEDORA_VERSION}/${arch} \;
 done
 
 for arch in SRPMS i386 x86_64; do
-    pushd /repo/${arch} >/dev/null
+    pushd /repo/${FEDORA_VERSION}/${arch} >/dev/null
       createrepo_c .
     popd >/dev/null 2>&1
 done
