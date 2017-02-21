@@ -1,9 +1,15 @@
 #.PHONY: lean all
 DOCKER_UID=1000
 DOCKER_GID=1000
-
-PASS_DIR?=$(shell readlink -f "./../pass" || (echo "Could not find PASS_DIR, please set it as env variable." >&2 && exit 2))
 CONNECT_VERSION=$(shell git describe --tags 2> /dev/null || echo "0.0.1")
+BUILDDIR=./packaging/$(DISTRIBUTION)/$(VERSION)
+DOCKERFILE=$(BUILDDIR)/Dockerfile
+
+ifndef GPG_KEY
+PASS_DIR?=$(shell readlink -f "./../pass" || (echo "Could not find PASS_DIR, please set it as env variable." >&2 && exit 2))
+export GPG_KEY=$(shell PASSWORD_STORE_DIR=$(PASS_DIR) pass show connect/signkey | awk 1 ORS='\\n' -)
+endif
+
 
 ifndef VERBOSE
 .SILENT:
@@ -14,11 +20,9 @@ TARGETS=$(shell find ./packaging/ -mindepth 2 -maxdepth 2 -type d | sed "s/^.\/p
 all: $(TARGETS)
 
 $(TARGETS):
-	$(eval TARGET_DIR=$(subst /, ,$@))
-	$(eval export DISTRIBUTION=$(word 1,$(TARGET_DIR)))
-	$(eval export VERSION=$(word 2,$(TARGET_DIR)))
-	$(eval BUILDDIR=./packaging/$(DISTRIBUTION)/$(VERSION))
-	$(eval DOCKERFILE=$(BUILDDIR)/Dockerfile)
+	[ "$(GPG_KEY)" != "" ] || (echo "Could not find GPG_KEY, please set it as env variable or fix pass repository." >&2 && exit 3)
+	$(eval export DISTRIBUTION=$(word 1,$(subst /, ,$@)))
+	$(eval export VERSION=$(word 2,$(subst /, ,$@)))
 
 	[ -f $(DOCKERFILE) ] || (echo "Error, no distribution with this name: $(DOCKERFILE)" >&2 && exit 1)
 	# Build container
@@ -30,11 +34,7 @@ $(TARGETS):
 
 	# Build connect, dependencies and repositories
 	mkdir -p $(shell pwd)/dist/$(DISTRIBUTION)/$(VERSION)/
-	export PASSWORD_STORE_DIR=$(PASS_DIR) && export GPG_KEY=`pass show connect/signkey` && \
-	    docker run -ti --rm --name "openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
-	        --volume=$(shell pwd)/dist/$(DISTRIBUTION)/:/repo/:rw \
-	        --env GPG_KEY --env CONNECT_VERSION=$(CONNECT_VERSION) \
-	        openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)
-
-upload:
-	./deploy.sh
+	export GPG_KEY="$(GPG_KEY)" && docker run -ti --rm --name "openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
+	    --volume=$(shell pwd)/dist/$(DISTRIBUTION)/:/repo/:rw \
+	    --env GPG_KEY --env CONNECT_VERSION=$(CONNECT_VERSION) \
+	    openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)
