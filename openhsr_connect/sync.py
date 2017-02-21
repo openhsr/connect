@@ -199,7 +199,7 @@ class Sync:
         repositories = self.config['sync']['repositories']
         if not repositories:
             self.logger.info("No repositories in config")
-        for name, repository in repositories.items():
+        for name, repository in sorted(repositories.items()):
             source = repository['remote-dir']
             destination = os.path.expanduser(repository['local-dir'])
             if not os.path.exists(destination):
