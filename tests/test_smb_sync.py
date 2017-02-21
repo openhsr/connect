@@ -108,7 +108,21 @@ def check_basic_sync(config, connection):
     assert_local_file_structure()
 
 
-def check_local_changes(config, connection, monkeypatch, conflict_handling, answer=None):
+# ------- Pytest Test Methods ------- #
+
+
+def test_sync_basic(config, connection):
+    check_basic_sync(config, connection)
+
+
+@pytest.mark.parametrize('conflict_handling, answer', [
+    ('ask', 'y'),
+    ('ask', 'n'),
+    ('overwrite', None),
+    ('keep', None),
+    ('makeCopy', None),
+])
+def test_local_changes(config, connection, monkeypatch, conflict_handling, answer):
     TEST_STR_REMOTE = 'remote change'
     TEST_STR_LOCAL = 'local change'
     config['sync']['conflict-handling']['local-changes'] = conflict_handling
@@ -133,7 +147,7 @@ def check_local_changes(config, connection, monkeypatch, conflict_handling, answ
     syncer.sync()
     if conflict_handling == 'keep' or answer == 'n':
         expected_content = TEST_STR_LOCAL
-    elif conflict_handling == 'overwrite' or conflict_handling == 'makeCopy' or answer == 'y':
+    elif conflict_handling in ['overwrite', 'makeCopy'] or answer == 'y':
         expected_content = TEST_STR_REMOTE
     file1_path = os.path.join(TEST_FOLDER, 'dir1', 'file1.txt')
     assert_file_content(file1_path, expected_content)
@@ -144,7 +158,13 @@ def check_local_changes(config, connection, monkeypatch, conflict_handling, answ
         assert_file_content(expected_name_path, TEST_STR_LOCAL)
 
 
-def check_remote_deleted(config, connection, monkeypatch, conflict_handling, answer=None):
+@pytest.mark.parametrize('conflict_handling, answer', [
+    ('ask', 'y'),
+    ('ask', 'n'),
+    ('delete', None),
+    ('keep', None),
+])
+def test_remote_deleted(config, connection, monkeypatch, conflict_handling, answer):
     config['sync']['conflict-handling']['remote-deleted'] = conflict_handling
     check_basic_sync(config, connection)
 
@@ -164,20 +184,17 @@ def check_remote_deleted(config, connection, monkeypatch, conflict_handling, ans
         assert os.path.exists(os.path.join(TEST_FOLDER, 'dir2', 'file2.txt'))
 
 
-def check_existing_local_files(config, connection, conflict_handling):
+@pytest.mark.parametrize('conflict_handling, expected_content', [
+    ('keep', 'existing file'),
+    ('overwrite', 'default content'),
+])
+def test_existing_local_files(config, connection, conflict_handling, expected_content):
     config['sync']['conflict-handling']['local-changes'] = conflict_handling
     dirname = os.path.join(TEST_FOLDER, 'dir1')
     os.makedirs(dirname)
     for filename in generate_files(2, 'existing file'):
         os.rename(filename, os.path.join(dirname, filename))
     check_basic_sync(config, connection)
-
-    if conflict_handling == 'keep':
-        expected_content = 'existing file'
-    elif conflict_handling == 'overwrite':
-        expected_content = DEFAULT_CONTENT
-    else:
-        raise NotImplementedError('conflict_handling must be keep or overwrite')
 
     assert_file_content(os.path.join(TEST_FOLDER, 'dir1', 'file1.txt'), expected_content)
 
@@ -187,56 +204,3 @@ def check_existing_local_files(config, connection, conflict_handling):
     syncer.sync()
     assert_local_file_structure()
     assert_file_content(os.path.join(TEST_FOLDER, 'dir1', 'file1.txt'), expected_content)
-
-
-# ------- Pytest Test Methods ------- #
-
-
-def test_sync_basic(config, connection):
-    check_basic_sync(config, connection)
-
-
-def test_local_changes_ask_overwrite(config, connection, monkeypatch):
-    check_local_changes(config, connection, monkeypatch, 'ask', 'y')
-
-
-def test_local_changes_ask_keep(config, connection, monkeypatch):
-    check_local_changes(config, connection, monkeypatch, 'ask', 'n')
-
-
-def test_local_changes_overwrite(config, connection, monkeypatch):
-    check_local_changes(config, connection, monkeypatch, 'overwrite')
-
-
-def test_local_changes_keep(config, connection, monkeypatch):
-    check_local_changes(config, connection, monkeypatch, 'keep')
-
-
-def test_local_changes_makeCopy(config, connection, monkeypatch):
-    check_local_changes(config, connection, monkeypatch, 'makeCopy')
-
-
-def test_remote_deleted_ask_delete(config, connection, monkeypatch):
-    check_remote_deleted(config, connection, monkeypatch, 'ask', 'y')
-
-
-def test_remote_deleted_ask_keep(config, connection, monkeypatch):
-    check_remote_deleted(config, connection, monkeypatch, 'ask', 'n')
-
-
-def test_remote_deleted_delete(config, connection, monkeypatch):
-    check_remote_deleted(config, connection, monkeypatch, 'delete')
-
-
-def test_remote_deleted_keep(config, connection, monkeypatch):
-    check_remote_deleted(config, connection, monkeypatch, 'keep')
-
-
-def test_keep_existing_local_files(config, connection):
-    check_existing_local_files(config, connection, 'keep')
-
-
-def test_overwrite_existing_local_files(config, connection):
-    check_existing_local_files(config, connection, 'overwrite')
-
-# TODO: Tests for excludes
