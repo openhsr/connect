@@ -2,19 +2,24 @@
 DOCKER_UID=1000
 DOCKER_GID=1000
 
-TARGET=$(subst /, ,$@)
-export DISTRIBUTION=$(word 1,$(TARGET))
-export VERSION=$(word 2,$(TARGET))
-BUILDDIR=./packaging/$(DISTRIBUTION)/$(VERSION)
-DOCKERFILE=$(BUILDDIR)/Dockerfile
-PASS_DIR?=`readlink -f "./../pass" || (echo "Could not find PASS_REPOSITORY, please set it as env variable." >&2 && exit 2)`
-CONNECT_VERSION=`git describe --tags 2> /dev/null || echo "0.0.1"`
+PASS_DIR?=$(shell readlink -f "./../pass" || (echo "Could not find PASS_DIR, please set it as env variable." >&2 && exit 2))
+CONNECT_VERSION=$(shell git describe --tags 2> /dev/null || echo "0.0.1")
 
 ifndef VERBOSE
 .SILENT:
 endif
 
-.DEFAULT:
+TARGETS=$(shell find ./packaging/ -mindepth 2 -maxdepth 2 -type d | sed "s/^.\/packaging\///")
+
+all: $(TARGETS)
+
+$(TARGETS):
+	$(eval TARGET_DIR=$(subst /, ,$@))
+	$(eval export DISTRIBUTION=$(word 1,$(TARGET_DIR)))
+	$(eval export VERSION=$(word 2,$(TARGET_DIR)))
+	$(eval BUILDDIR=./packaging/$(DISTRIBUTION)/$(VERSION))
+	$(eval DOCKERFILE=$(BUILDDIR)/Dockerfile)
+
 	[ -f $(DOCKERFILE) ] || (echo "Error, no distribution with this name: $(DOCKERFILE)" >&2 && exit 1)
 	# Build container
 	docker build \
