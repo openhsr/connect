@@ -207,7 +207,7 @@ class Sync:
             self.logger.info('Starting sync: %s -> %s' % (source, destination))
             excludes = self.config['sync']['global-exclude'] + repository['exclude']
             self.logger.info('The following patterns will be excluded: %s' % (excludes))
-            cache_file = '%s/.%s.json' % (destination, name)
+            cache_file = os.path.join(destination, '.openhsr-%s.json' % name)
             cache = self.load_cache(cache_file)
             self.sync_tree(name, source, destination, '', excludes, cache)
             self.dump_cache(cache_file, cache)
