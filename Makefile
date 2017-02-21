@@ -25,16 +25,16 @@ $(TARGETS):
 	docker build \
 	    -t "openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
 	    --build-arg DOCKER_UID=$(DOCKER_UID) --build-arg DOCKER_GID=$(DOCKER_GID) \
-		--build-arg VERSION --build-arg DISTRIBUTION \
+	    --build-arg VERSION --build-arg DISTRIBUTION \
 	    -f $(DOCKERFILE) .
 
 	# Build connect, dependencies and repositories
 	mkdir -p $(shell pwd)/dist/$(DISTRIBUTION)/$(VERSION)/
-	export PASSWORD_STORE_DIR=$(PASS_DIR) && \
-		export GPG_KEY=`pass show connect/signkey` && \
-		docker run -ti --rm --name "openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
-		--volume=$(shell pwd)/dist/$(DISTRIBUTION)/:/repo/:rw \
-	    --env GPG_KEY --env CONNECT_VERSION=$(CONNECT_VERSION) \
-	    openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)
+	export PASSWORD_STORE_DIR=$(PASS_DIR) && export GPG_KEY=`pass show connect/signkey` && \
+	    docker run -ti --rm --name "openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
+	        --volume=$(shell pwd)/dist/$(DISTRIBUTION)/:/repo/:rw \
+	        --env GPG_KEY --env CONNECT_VERSION=$(CONNECT_VERSION) \
+	        openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)
 
-
+upload:
+	./deploy.sh
