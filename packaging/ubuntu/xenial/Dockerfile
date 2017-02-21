@@ -15,13 +15,25 @@ ENV VERSION $VERSION
 # Writable subfolders
 WORKDIR /build
 
+# User
+RUN groupadd -g ${DOCKER_GID} user && \
+	useradd --home /build -u ${DOCKER_UID} -g ${DOCKER_GID} -M user && \
+	mkdir -p /source/{dist,build,openhsr_connect.egg-info} /repo /build/.gnupg && \
+	chmod 700 /build/.gnupg && \
+	chown -R ${DOCKER_UID}:${DOCKER_GID} /build /repo /source
+
+# Packages
+RUN apt-get update
+
+# Python
+RUN apt-get install -y python3 python3-all python3-pip python3-pkg-resources
+
+# Packaging
+RUN apt-get install -y reprepro debhelper devscripts -y
+
 # Add relevant files for build
 ADD packaging/${DISTRIBUTION}/${VERSION}/gpg.conf /build/.gnupg/gpg.conf
 ADD packaging/${DISTRIBUTION}/${VERSION}/build.bash /opt/build.bash
-
-# Provisioning script
-ADD packaging/${DISTRIBUTION}/${VERSION}/Dockerfile.bash /opt/
-RUN /bin/bash /opt/Dockerfile.bash 
 
 # Add relevant files for creating packages
 ADD ./ /build/openhsr-connect/
