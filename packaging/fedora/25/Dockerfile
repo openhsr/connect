@@ -13,18 +13,18 @@ ENV RELEASE $RELEASE
 # Writable subfolders
 WORKDIR /build
 
-# User
-RUN groupadd -g ${DOCKER_GID} user && \
-	useradd --home /build -u ${DOCKER_UID} -g ${DOCKER_GID} -G mock -M user && \
-	mkdir -p /source/{dist,build,openhsr_connect.egg-info} /repo /build/.gnupg && \
-	chmod 700 /build/.gnupg && \
-	chown -R user:user /build /repo /source
-
 # Python
 RUN dnf install -y python3{,-devel,-pip,-setuptools,-setuptools_scm}
 
 # Packaging
 RUN dnf install -y fedora-packager fedora-review gnupg rpm-sign
+
+# User (this is dependent on the packaging)
+RUN groupadd -g ${DOCKER_GID} user && \
+	useradd --home /build -u ${DOCKER_UID} -g ${DOCKER_GID} -G mock -M user && \
+	mkdir -p /source/{dist,build,openhsr_connect.egg-info} /repo /build/.gnupg && \
+	chmod 700 /build/.gnupg && \
+	chown -R user:user /build /repo /source
 
 # Add relevant files for build
 ADD packaging/${DISTRIBUTION}/${VERSION}/gpg.conf /build/.gnupg/gpg.conf

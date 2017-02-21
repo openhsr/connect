@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 FEDORA_VERSION=25
 SPECDIR="/src/packaging/fedora/${FEDORA_VERSION}/"
 
@@ -35,9 +36,7 @@ cat <<'__EOF__' > /build/.rpmmacros
 %_gpg_name 0x04969FB29CABC357
 __EOF__
 
-gpg --import <<__EOF__
-${GPG_KEY}
-__EOF__
+gpg --import <(echo -e "${GPG_KEY}")
 
 find $SPECDIR -name '*.rpm' -exec rpm --addsign {} \;
 
@@ -53,6 +52,7 @@ done
 
 for arch in SRPMS i386 x86_64; do
     pushd /repo/${FEDORA_VERSION}/${arch} >/dev/null
-      createrepo_c .
+      createrepo_c --update .
+      rm -rf .repodata
     popd >/dev/null 2>&1
 done

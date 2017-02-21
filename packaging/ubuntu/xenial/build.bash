@@ -1,9 +1,8 @@
 #!/bin/bash
+set -e
 
 # Import GPG signing key
-gpg --import <<__EOF__
-${GPG_KEY}
-__EOF__
+gpg --import <(echo -e "${GPG_KEY}")
 
 # Build .deb and sign it... 
 cd /build/openhsr-connect/
