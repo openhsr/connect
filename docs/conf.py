@@ -96,6 +96,12 @@ html_theme = 'bizstyle'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+# configures that the index is visible in the sidebar.
+html_sidebars = {
+   '**': ['relations.html', 'globaltoc.html', 'sourcelink.html', 'searchbox.html'],
+   'using/windows': ['windowssidebar.html', 'searchbox.html'],
+}
+
 
 # -- Options for HTMLHelp output ------------------------------------------
 
