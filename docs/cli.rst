@@ -10,6 +10,8 @@ Aktionen:
 
 **sync**: Synchronisiert die Daten vom HSR Server ins lokale Verzeichnis.
 
+.. _local-changes:
+
     **--local-changes**: Parameter was mit lokalen Änderungen gemacht werden soll:
         
         **ask**: Default: Frage vor jeder Überschreibung
@@ -20,7 +22,8 @@ Aktionen:
         
         **makeCopy**: Benennt die alte, lokale Kopie um auf Filename-Datum.ext
 
-        
+.. _remote_deleted:
+
     **--remote-deleted**: Was mit den lokalen Kopien gemacht werden soll wenn die Server Kopie gelöscht wurde:
     
         **ask**: Frage für jedes File nach

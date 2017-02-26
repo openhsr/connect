@@ -1,9 +1,0 @@
-synced/
-venv/
-.venv/
-.cache/
-.coverage
-openhsr_connect.egg-info
-__pycache__/
-*.pyc
-dist/
