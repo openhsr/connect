@@ -7,6 +7,7 @@ from openhsr_connect import configuration
 from openhsr_connect import user_daemon
 from openhsr_connect import smb_sync
 from openhsr_connect import __VERSION__
+from openhsr_connect import exceptions
 
 logger = logging.getLogger('openhsr_connect')
 
@@ -88,7 +89,7 @@ def main():
         cli.add_command(edit)
         cli.add_command(browserhelp)
         cli(standalone_mode=False)
-    except Exception as e:
+    except (exceptions.Error, click.ClickException) as e:
         logger.error(e)
         logger.debug(e, exc_info=True)
         exit(1)
