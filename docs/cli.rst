@@ -1,6 +1,6 @@
  
-Console parameters
-==================
+Konsoleparameter
+================
 
 Aktionen:
 
@@ -12,7 +12,8 @@ Aktionen:
 
 .. _local-changes:
 
-    **--local-changes**: Parameter was mit lokalen Änderungen gemacht werden soll:
+    **--local-changes**: Parameter was mit lokalen Änderungen gemacht werden soll, diese Option überschreibt die
+    Einstellung im Konfigurations-File.
         
         **ask**: Default: Frage vor jeder Überschreibung
         
@@ -24,7 +25,8 @@ Aktionen:
 
 .. _remote_deleted:
 
-    **--remote-deleted**: Was mit den lokalen Kopien gemacht werden soll wenn die Server Kopie gelöscht wurde:
+    **--remote-deleted**: Was mit den lokalen Kopien gemacht werden soll wenn die Server Kopie gelöscht wurde,
+    diese Option überschreibt die Einstellung im Konfigurations-File.
     
         **ask**: Frage für jedes File nach
         
@@ -38,6 +40,6 @@ Aktionen:
         
 Optionale Parameter:
 
- **-v**, **--verbose**: Genaues Ausgabe Logging aktivieren
+**-v**, **--verbose**: Genaues Ausgabe Logging aktivieren
  
- **-q**, **--quiet**:   Keine Informationen auf die Ausgabe schreiben
+**-q**, **--quiet**:   Keine Informationen auf die Ausgabe schreiben
