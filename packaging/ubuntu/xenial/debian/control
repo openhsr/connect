@@ -10,7 +10,7 @@ Standards-Version: 3.9.6
 Package: openhsr-connect
 Architecture: all
 Section: utils
-Depends: ${misc:Depends}, ${python3:Depends}, cups
+Depends: ${misc:Depends}, ${python3:Depends}, python3-ruamel.yaml, python3-pysmb, cups
 Description: Die offene HSR-Mapper alternative!
  Besser als der HSR Mapper ;)
 

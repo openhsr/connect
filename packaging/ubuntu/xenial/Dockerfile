@@ -33,12 +33,14 @@ RUN apt-get install -y reprepro debhelper devscripts -y
 
 # Add relevant files for build
 ADD packaging/${DISTRIBUTION}/${VERSION}/gpg.conf /build/.gnupg/gpg.conf
-ADD packaging/${DISTRIBUTION}/${VERSION}/build.bash /opt/build.bash
+# ADD packaging/${DISTRIBUTION}/${VERSION}/build.bash /opt/build.bash
 
 # Add relevant files for creating packages
 ADD ./ /build/openhsr-connect/
 RUN chown -R user:user /build/openhsr-connect/
 
+
+ADD packaging/${DISTRIBUTION}/${VERSION}/build.bash /opt/build.bash
 USER user
 
 CMD [ "/opt/build.bash" ]

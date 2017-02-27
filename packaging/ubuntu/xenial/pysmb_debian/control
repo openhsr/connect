@@ -1,0 +1,15 @@
+Source: python3-pysmb
+Section: utils
+Priority: optional
+Maintainer: Michael Teo <miketeo@miketeo.net>
+Build-Depends: debhelper (>= 7),
+               python3-all (>= 3.4)
+X-Python-Version: >= 3.4
+Standards-Version: 3.9.6
+
+Package: python3-pysmb
+Architecture: all
+Section: python
+Depends: ${misc:Depends}, ${python3:Depends}
+Description: pysmb is an experimental SMB/CIFS
+ library written in Python to support file sharing between Windows and Linux machines 
