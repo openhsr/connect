@@ -4,10 +4,10 @@ Name:           python3-%{srcname}
 #TODO: Version from outside
 Version:        1.1.19
 Release:        1%{?dist}
-Summary:        Die offene HSR-Mapper Alternative
+Summary:        Experimental SMB/CIFS library written in Python.
 
-License:        GPLv3
-URL:            https://www.openhsr.ch/connect
+License:        zlib/libpng
+URL:            https://github.com/miketeo/pysmb
 Source0:        pysmb-%{version}.tar.gz
 
 # build
