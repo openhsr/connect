@@ -1,5 +1,5 @@
 import os
-import yaml
+import ruamel.yaml
 import logging
 import getpass
 import keyring
@@ -121,7 +121,7 @@ def load_config(raise_if_incomplete=False):
 
     config = None
     with open(config_path, 'r') as f:
-        config = yaml.load(f)
+        config = ruamel.yaml.load(f, ruamel.yaml.RoundTripLoader)
 
     # Verify if the password is in the keyring
     try:
