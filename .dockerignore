@@ -1,5 +1,6 @@
 synced/
 venv/
+.git/
 .venv/
 .cache/
 .coverage
@@ -8,3 +9,4 @@ __pycache__/
 *.pyc
 dist/
 build/
+
