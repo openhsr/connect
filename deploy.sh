@@ -18,13 +18,13 @@ if [ ! -n "$PASSWORD" ];then
     exit 1
 fi
 
-if [ ! -n "$DIRECTORY" ];then
-    echo  "missing option \"DIRECTORY\", aborting"
+if [ ! -n "$DIR_REMOTE" ];then
+    echo  "missing option \"DIR_REMOTE\", aborting"
     exit 1
 fi
 
-# Go into the directory, where the site was generated
-cd "$DIR/_site/"
+# Go into the DIR_LOCAL, the root to upload data from
+cd "${DIR}/${DIR_LOCAL}"
 
 
 echo "Uploading..."
@@ -34,7 +34,7 @@ set ssl:verify-certificate no
 set ssl:check-hostname off
 set cmd:fail-exit true
 user $USER $PASSWORD
-cd $DIRECTORY
+cd $DIR_REMOTE
 mirror --reverse --delete --ignore-time --verbose --parallel . .
 bye
 "
