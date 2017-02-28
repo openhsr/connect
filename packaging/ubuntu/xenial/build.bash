@@ -30,4 +30,3 @@ cat /build/openhsr-connect/packaging/${DISTRIBUTION}/*/distributions > /repo/con
 reprepro -Vb /repo/ export
 reprepro -Vb /repo/ includedeb ${VERSION} /build/openhsr-connect_${CONNECT_VERSION}_all.deb
 reprepro -Vb /repo/ includedeb ${VERSION} /build/python3-pysmb_${PYSMB_VERSION}_all.deb
-/bin/bash
