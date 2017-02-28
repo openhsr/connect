@@ -34,7 +34,7 @@ BuildRequires:  python%{python3_pkgversion}-setuptools_scm
 
 Requires:       python%{python3_pkgversion}-pysmb
 Requires:       python%{python3_pkgversion}-click
-Requires:       python%{python3_pkgversion}-ruamel
+Requires:       python%{python3_pkgversion}-ruamel-yaml
 Requires:       python%{python3_pkgversion}-keyring
 Requires:       python%{python3_pkgversion}-jsonschema
 Requires:	python%{python3_pkgversion}
