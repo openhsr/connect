@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="openhsr-connect",
-    version="0.1.0.dev0",
+    version="0.1.1.dev0",
     packages=['openhsr_connect'],
     author="open\HSR",
     author_email="connect@openhsr.ch",
