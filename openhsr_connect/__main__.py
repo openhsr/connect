@@ -89,6 +89,9 @@ def main():
         cli.add_command(edit)
         cli.add_command(browserhelp)
         cli(standalone_mode=False)
+    except click.UsageError as e:
+        e.show()
+        exit(1)
     except (exceptions.Error, click.ClickException) as e:
         logger.error(e)
         logger.debug(e, exc_info=True)
