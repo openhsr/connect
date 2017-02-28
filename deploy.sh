@@ -2,7 +2,7 @@
 
 # Abort if a command fails!
 set -e
-
+echo "Starting deployment configuration..."
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 if [ ! -n "$HOST" ];then
