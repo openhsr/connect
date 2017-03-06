@@ -1,0 +1,12 @@
+FROM alpine:latest
+MAINTAINER open\HSR <connect@openhsr.ch>
+RUN apk --no-cache add lftp bash ca-certificates
+
+RUN mkdir /deploy/
+VOLUME ['/repo']
+
+ADD deploy.sh /deploy/deploy.sh
+RUN chmod a+x /deploy/deploy.sh
+
+WORKDIR /repo
+ENTRYPOINT [ "/deploy/deploy.sh" ]

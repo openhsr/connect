@@ -1,4 +1,4 @@
-#.PHONY: lean all
+.PHONY: all upload
 DOCKER_UID=1000
 DOCKER_GID=1000
 CONNECT_VERSION=$(shell git describe --tags 2> /dev/null || echo "0.0.1")
@@ -38,3 +38,8 @@ $(TARGETS):
 	    --volume=$(shell pwd)/dist/$(DISTRIBUTION)/:/repo/:rw \
 	    --env GPG_KEY --env CONNECT_VERSION=$(CONNECT_VERSION) \
 	    openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)
+
+upload:
+	cp packaging/htaccess dist/.htaccess
+	docker build -f packaging/Dockerfile.lftp -t openhsr/deploy packaging/	
+	docker run -it -e USER -e PASSWORD -e HOST -e DIR_REMOTE --rm -v $(shell pwd)/dist:/repo openhsr/deploy

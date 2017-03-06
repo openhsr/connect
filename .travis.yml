@@ -11,7 +11,7 @@ script:
 
 deploy:
   provider: script
-  script: "/bin/bash deploy.sh"
+  script: make upload
   skip_cleanup: true
   on:
     branch: master
