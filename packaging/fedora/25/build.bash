@@ -11,7 +11,7 @@ pushd /src > /dev/null
 popd > /dev/null
 
 pushd $SPECDIR >/dev/null
-  rpmdev-bumpspec -u openhsr -n "$VERSION" openhsr-connect.spec
+  rpmdev-bumpspec -u openhsr -n "$CONNECT_VERSION" openhsr-connect.spec
   fedpkg --release f${FEDORA_VERSION} local
 popd > /dev/null
 
