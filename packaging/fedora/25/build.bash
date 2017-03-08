@@ -27,6 +27,13 @@ pushd ${SPECDIR}pysmb/ > /dev/null
   fedpkg --release f${FEDORA_VERSION} local
 popd > /dev/null
 
+JSONSCHEMA_VERSION=2.6.0
+pushd ${SPECDIR}jsonschema > /dev/null
+  curl -o jsonschema-${JSONSCHEMA_VERSION}.tar.gz https://pypi.python.org/packages/58/b9/171dbb07e18c6346090a37f03c7e74410a1a56123f847efed59af260a298/jsonschema-${JSONSCHEMA_VERSION}.tar.gz
+  rpmdev-bumpspec -u openhsr -n "$JSONSCHEMA_VERSION" jsonschema.spec
+  fedpkg --release f${FEDORA_VERSION} local
+popd > /dev/null
+
 ###############################################################################
 # Package signing
 ###############################################################################
