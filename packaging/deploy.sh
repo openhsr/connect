@@ -28,7 +28,7 @@ open $HOST
 set cmd:fail-exit true
 user $USER $PASSWORD
 cd $DIR_REMOTE
-mirror --reverse --delete --ignore-time --verbose --parallel . .
+mirror --reverse --delete --ignore-time --transfer-all --overwrite --verbose --parallel . .
 bye
 "
 
