@@ -7,7 +7,7 @@ DOCKERFILE=$(BUILDDIR)/Dockerfile
 
 ifndef GPG_KEY
 PASS_DIR?=$(shell readlink -f "./../pass" || (echo "Could not find PASS_DIR, please set it as env variable." >&2 && exit 2))
-export GPG_KEY=$(shell PASSWORD_STORE_DIR=$(PASS_DIR) pass show connect/signkey | awk 1 ORS='\\n' -)
+export GPG_KEY=$(shell PASSWORD_STORE_DIR=$(PASS_DIR) pass show  pool/gpg_pool@openhsr.ch_PRIVATE_key | awk 1 ORS='\\n' -)
 endif
 
 
@@ -41,5 +41,6 @@ $(TARGETS):
 
 upload:
 	cp packaging/htaccess dist/.htaccess
+	cp packaging/pool@openhsr.ch.gpg.key dist/
 	docker build -f packaging/Dockerfile.lftp -t openhsr/deploy packaging/	
 	docker run -it -e USER -e PASSWORD -e HOST -e DIR_REMOTE --rm -v $(shell pwd)/dist:/repo openhsr/deploy

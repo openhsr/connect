@@ -40,7 +40,7 @@ popd > /dev/null
 cat <<'__EOF__' > /build/.rpmmacros
 %_signature gpg
 %_gpg_path /build/.gnupg
-%_gpg_name 0x04969FB29CABC357
+%_gpg_name 0x5AE4B07A1957D46D
 __EOF__
 
 gpg --import <(echo -e "${GPG_KEY}")
