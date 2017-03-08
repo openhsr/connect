@@ -1,5 +1,5 @@
 
 ## Fedora
 ```bash
-dnf config-manager --add-repo https://pool.openhsr.ch/connect/fedora.repo
+dnf config-manager --add-repo https://raw.githubusercontent.com/openhsr/connect/master/packaging/fedora/openhsr-pool.repo
 ```
