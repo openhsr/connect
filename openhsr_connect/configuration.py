@@ -37,7 +37,7 @@ SCHEMA = {
                 },
                 'email': {
                     'type': 'string',
-                    'pattern': '^[a-zA-Z0-9]+\.[a-zA-Z0-9]+\@hsr.ch$'
+                    'pattern': '^[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\@hsr.ch$'
                 }
             },
             'required': ['username', 'email']
