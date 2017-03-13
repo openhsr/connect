@@ -7,11 +7,13 @@ SPECDIR="/src/packaging/fedora/${FEDORA_VERSION}/"
 # Build connect
 ###############################################################################
 pushd /src > /dev/null
+  sed -i -e 's/version[\t ]*=[\t ]*"[0-9]*\.[0-9]*\.[0-9]*"/version="'${CONNECT_VERSION}'"/gi' setup.py
   python3 ./setup.py sdist --dist-dir=$SPECDIR
 popd > /dev/null
 
 pushd $SPECDIR >/dev/null
   rpmdev-bumpspec -u openhsr -n "$CONNECT_VERSION" openhsr-connect.spec
+
   fedpkg --release f${FEDORA_VERSION} local
 popd > /dev/null
 

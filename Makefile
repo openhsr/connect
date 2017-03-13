@@ -1,7 +1,7 @@
 .PHONY: all upload
 DOCKER_UID=1000
 DOCKER_GID=1000
-CONNECT_VERSION=$(shell git describe --tags 2> /dev/null || echo "0.0.1")
+CONNECT_VERSION=$(shell ./packaging/version.bash)
 BUILDDIR=./packaging/$(DISTRIBUTION)/$(VERSION)
 DOCKERFILE=$(BUILDDIR)/Dockerfile
 
@@ -20,6 +20,9 @@ TARGETS=$(shell find ./packaging/ -mindepth 2 -maxdepth 2 -type d | sed "s/^.\/p
 all: $(TARGETS)
 
 $(TARGETS):
+	@echo ========================================================================
+	@echo Building version $(CONNECT_VERSION) for $@
+	@echo ========================================================================
 	[ "$(GPG_KEY)" != "" ] || (echo "Could not find GPG_KEY, please set it as env variable or fix pass repository." >&2 && exit 3)
 	$(eval export DISTRIBUTION=$(word 1,$(subst /, ,$@)))
 	$(eval export VERSION=$(word 2,$(subst /, ,$@)))
