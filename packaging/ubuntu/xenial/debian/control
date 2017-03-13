@@ -3,8 +3,8 @@ Section: utils
 Priority: optional
 Maintainer: open\HSR Pool <pool@openhsr.ch>
 Build-Depends: debhelper (>= 7),
-               python3-all (>= 3.4)
-X-Python-Version: >= 3.4
+               python3-all (>= 3.5)
+X-Python-Version: >= 3.5
 Standards-Version: 3.9.6
 
 Package: openhsr-connect
