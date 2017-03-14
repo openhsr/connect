@@ -1,9 +1,6 @@
-import sys
 import os
-import base64
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE
 import logging
-import keyring
 
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -12,7 +9,6 @@ from email.mime.text import MIMEText
 from email import encoders
 
 from openhsr_connect.exceptions import PrintException
-from openhsr_connect.exceptions import PasswordException
 
 # These values are hard-coded to be updated easily in case of a change in the HSR infrastructure.
 reciever = 'mobileprint@hsr.ch'
@@ -21,7 +17,7 @@ smtp_server = 'smtp.hsr.ch'
 logger = logging.getLogger('openhsr_connect.print')
 
 
-def send_to_printer(config, password, data):
+def send_to_printer(config, password, meta, payload):
     """
     This method shall be called by the cups backend backend.
     As input, the "data" object sent from the cups backend is expected
@@ -29,24 +25,22 @@ def send_to_printer(config, password, data):
     This method can throw a PrintException that must be caughted by the daemon.
     """
 
-    file_name = 'openhsr-connect-%s-%s.pdf' % (data['id'], data['user'])
-    full_path = os.path.join(data['directory'], file_name)
+    file_name = 'openhsr-connect-%s-%s.pdf' % (meta['id'], meta['user'])
+    full_path = os.path.join(meta['directory'], file_name)
 
-    create_pdf(full_path, data)
+    create_pdf(full_path, payload)
     send_email(full_path, config['login']['email'], config['login']['username'], password)
 
     # Remove PDF file when sent
     os.remove(full_path)
 
 
-def create_pdf(full_path, data):
+def create_pdf(full_path, raw):
     """
     Creates a PDF from the given stdin into a file at full_path.
     If the conversion fails, an error is logged to stderr and the program quits with
     exit code 1.
     """
-
-    raw = base64.b64decode(data['data'])
 
     command = ['gs', '-q', '-dNOPAUSE', '-dBATCH', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
                '-sPAPERSIZE=a4', '-dPDFSETTINGS=/printer', '-sOutputFile=%s' % full_path,

@@ -2,6 +2,7 @@ import os
 import socket
 import json
 import logging
+import struct
 
 from openhsr_connect import printing
 from openhsr_connect.exceptions import PrintException
@@ -31,12 +32,11 @@ def create_socket():
 
     while True:
         conn, addr = filesocket.accept()
-        data = read_data(conn)
-        logger.debug('Recieving document...')
+        meta, payload = read_data(conn)
         try:
             config = configuration.load_config(raise_if_incomplete=True)
             password = configuration.get_password(config)
-            printing.send_to_printer(config, password, data)
+            printing.send_to_printer(config, password, meta, payload)
         except PrintException as e:
             logger.error('Exception occured during send_to_printer: \n%s ' % e)
 
@@ -48,12 +48,20 @@ def read_data(conn):
     the print.
     This method reads all the data and returns the parsed JSON object.
     """
+    header_length_b = conn.recv(8)
+    header_length = struct.unpack('<q', header_length_b)[0]
+    logger.debug("received header length: {0}(Binary {1})".format(header_length, header_length_b))
+
+    raw = conn.recv(header_length)
+    header = json.loads(raw.decode())
+    logger.debug("received header: {0}".format(header))
+
     binary = b''
     while True:
         bufsize = 1024
         temp = conn.recv(bufsize)
         binary += temp
+        logger.debug("recieved {} bytes...".format(len(temp)))
         if (len(temp) < bufsize):
             break
-
-    return json.loads(binary.decode('utf-8'))
+    return (header, binary)
