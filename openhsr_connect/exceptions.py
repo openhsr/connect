@@ -1,14 +1,18 @@
-class ConnectException(Exception):
+class Error(Exception):
     pass
 
 
-class PrintException(ConnectException):
+class ConnectException(Error):
     pass
 
 
-class PasswordException(ConnectException):
+class PrintException(Error):
     pass
 
 
-class ConfigurationException(ConnectException):
+class PasswordException(Error):
+    pass
+
+
+class ConfigurationException(Error):
     pass

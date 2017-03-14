@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# install printer (if not present yet)
+if lpstat -a openhsr-connect > /dev/null 2>&1 /dev/null; then
+    echo "Printer openhsr-connect already installed"
+else
+    echo "Adding printer openhsr-connect..."
+    lpadmin -p openhsr-connect -E -v openhsr-connect:/tmp -P /usr/share/ppd/openhsr-connect/Generic-PostScript_Printer-Postscript.ppd
+fi
+  

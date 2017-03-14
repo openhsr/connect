@@ -7,10 +7,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="openhsr-connect",
-    version="0.1.0.dev0",
+    version="0.1.15",
     packages=['openhsr_connect'],
     author="open\HSR",
-    author_email="info@openhsr.ch",
+    author_email="connect@openhsr.ch",
     url="https://github.com/openhsr/connect",
     description="Die Offene HSR-Mapper Alternative",
     long_description=("For more information, please checkout the `Github Page "
@@ -19,7 +19,7 @@ setup(
     platforms=["Linux", "BSD", "MacOS"],
     include_package_data=True,
     zip_safe=False,
-    install_requires=['pysmb', 'click', 'pyyaml', 'keyring', 'jsonschema'],
+    install_requires=['pysmb', 'click', 'ruamel.yaml', 'keyring', 'jsonschema'],
     test_suite='tests',
     entry_points={
         'console_scripts':

@@ -1,6 +1,6 @@
 # Entwicklungsumgebung aufsetzen
 
-Bevor du loslegst, stelle sicher, dass du Python 3.4 bzw. Python 3.5 installiert hast.
+Bevor du loslegst, stelle sicher, dass du Python 3.5 bzw. Python 3.5 installiert hast.
 Dies kannst du machen, in dem du das Kommando `python3 --version` ausführst
 
 ```bash

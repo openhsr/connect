@@ -1,18 +1,13 @@
 import click
-import traceback
 import os
-import jsonschema
 import webbrowser
 import sys
 import logging
-
-from openhsr_connect.exceptions import ConnectException
 from openhsr_connect import configuration
 from openhsr_connect import user_daemon
-from openhsr_connect import sync
 from openhsr_connect import smb_sync
 from openhsr_connect import __VERSION__
-
+from openhsr_connect import exceptions
 
 logger = logging.getLogger('openhsr_connect')
 
@@ -21,25 +16,20 @@ logger = logging.getLogger('openhsr_connect')
 @click.version_option(version=__VERSION__)
 @click.option('-v', '--verbose', is_flag=True, default=False, help='increase verbosity')
 @click.option('-q', '--quiet', is_flag=True, default=False, help='suppress non-error messages')
-@click.pass_context
-def cli(ctx, verbose, quiet):
+def cli(verbose, quiet):
     setup_logging(verbose, quiet)
     logger.warning('WARNUNG: NOCH IST DIESE SOFTWARE IN ENTWICKLUNG - ALSO NICHT FÜR '
                    'DEN PRODUKTIVEN EINSATZ GEEIGNET!')
 
-    ctx.obj['config'] = configuration.load_config()
-
 
 @click.command(name='update-password')
-@click.pass_context
-def update_password(ctx):
-    configuration.set_password(ctx.obj['config'])
+def update_password():
+    configuration.set_password(configuration.load_config())
 
 
 @click.command()
 @click.option('--daemonize', is_flag=True, default=False)
-@click.pass_context
-def daemon(ctx, daemonize):
+def daemon(daemonize):
     if daemonize:
         try:
             pid = os.fork()
@@ -56,26 +46,24 @@ def daemon(ctx, daemonize):
 @click.command('sync')
 @click.option('--local-changes', type=click.Choice(['ask', 'overwrite', 'keep', 'makeCopy']))
 @click.option('--remote-deleted', type=click.Choice(['ask', 'delete', 'keep']))
-@click.pass_context
-def sync_command(ctx, local_changes, remote_deleted):
+def sync_command(local_changes, remote_deleted):
+    config = configuration.load_config()
     if local_changes:
-        ctx.obj['config']['sync']['conflict_handling']['local-changes'] = local_changes
+        config['sync']['conflict_handling']['local-changes'] = local_changes
     if remote_deleted:
-        ctx.obj['config']['sync']['conflict_handling']['remote-deleted'] = remote_deleted
-    smb_syncer = smb_sync.SMB_Sync(ctx.obj['config'])
+        config['sync']['conflict_handling']['remote-deleted'] = remote_deleted
+    smb_syncer = smb_sync.SMB_Sync(config)
     smb_syncer.sync()
 
 
 @click.command(name='help', help="Open the Documentation in the Browser")
-@click.pass_context
-def browserhelp(ctx):
-    webbrowser.open('https://github.com/openhsr/connect/tree/master/docs')
+def browserhelp():
+    webbrowser.open('https://openhsr-connect.readthedocs.io/de/latest/')
 
 
 @click.command()
-@click.pass_context
-def edit(ctx):
-    configuration.edit(ctx.obj['config'])
+def edit():
+    configuration.edit()
 
 
 def setup_logging(verbose, quiet):
@@ -100,11 +88,15 @@ def main():
         cli.add_command(daemon)
         cli.add_command(edit)
         cli.add_command(browserhelp)
-        cli(obj={}, standalone_mode=False)
-    except Exception as e:
+        cli(standalone_mode=False)
+    except click.UsageError as e:
+        e.show()
+        exit(1)
+    except (exceptions.Error, click.ClickException) as e:
         logger.error(e)
         logger.debug(e, exc_info=True)
         exit(1)
+
 
 if __name__ == '__main__':
     main()

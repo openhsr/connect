@@ -1,0 +1,10 @@
+Origin: pool.openhsr.ch
+Label: openHSR Ubuntu Xenial Pool
+Suite: stable
+Codename: xenial
+Version: 16.04
+Architectures: i386 amd64 source
+Components: main
+Description: openHSR Ubuntu Xenial Pool
+SignWith: 1957D46D
+  

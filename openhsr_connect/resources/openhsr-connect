@@ -5,7 +5,7 @@ import sys
 import os
 import json
 import socket
-import base64
+import struct
 from pwd import getpwnam
 
 
@@ -29,11 +29,10 @@ def main():
     raw = None
     if len(sys.argv) == 7:
         # if a file is given
-        with open(sys.argv[6], 'rb') as f:
-            raw = f.read()
+        raw = open(sys.argv[6], 'rb')
     else:
         # read input from stdin
-        raw = sys.stdin.buffer.read()
+        raw = sys.stdin.buffer.raw
 
     # Fill up a json object to send to the user deamon
     data = {'version': 1}
@@ -43,16 +42,28 @@ def main():
     data['number-of-copies'] = sys.argv[4]
     data['options'] = sys.argv[5]
     data['directory'] = directory
-    data['data'] = base64.b64encode(raw).decode('utf-8')
 
-    # connect to the user deamon and send a utf-8 binary stream with the json object
-    # the deamon will handle further printing work.
-    # TODO: Adapt path
+    # connect to the user deamon and send
+    # * First, send the header length (64-Bit number (little-endian)
+    # * A utf-8 binary stream with the meta-data in the json-format
+    # * Send the raw cups input (postscript) in chucks of 1024 bytes
+
     filesocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     user_id = getpwnam(data['user']).pw_uid
     filesocket.connect('/var/run/user/%s/openhsr-connect.sock' % user_id)
-    filesocket.sendall(json.dumps(data).encode('utf-8'))
+
+    header = json.dumps(data).encode('utf-8')
+    header_length = struct.pack('<q', len(header))
+    filesocket.sendall(header_length)
+    filesocket.sendall(header)
+
+    has_more = True
+    while(has_more):
+        msg = raw.read(1024)
+        filesocket.send(msg)
+        has_more = len(msg) == 1024
     filesocket.close()
+
 
 if __name__ == '__main__':
     main()

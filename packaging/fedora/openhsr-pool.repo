@@ -1,0 +1,13 @@
+[openhsr-connect]
+name=open\HSR Connect
+baseurl=https://pool.openhsr.ch/fedora/$releasever/$basearch/
+enabled=1
+gpgkey=https://pool.openhsr.ch/pool@openhsr.ch.gpg.key
+gpgcheck=1
+
+[openhsr-connect-source]
+name=open\HSR Connect - Source
+baseurl=https://pool.openhsr.ch/fedora/$releasever/SRPMS/
+enabled=0
+gpgkey=https://pool.openhsr.ch/pool@openhsr.ch.gpg.key
+gpgcheck=1

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Remove printer if installed
+if lpstat -a openhsr-connect > /dev/null 2>&1 /dev/null; then
+    echo "Removing printer openhsr-connect..."
+    lpadmin -x openhsr-connect
+fi
+

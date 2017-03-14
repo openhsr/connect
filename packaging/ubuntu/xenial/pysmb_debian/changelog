@@ -1,0 +1,5 @@
+python3-pysmb (PYSMB_VERSION) UNRELEASED; urgency=medium
+
+  * PYSMB_VERSION Initial release.
+
+ -- open\HSR Pool <pool@openhsr.ch>  Thu, 16 Feb 2017 15:55:41 +0100

@@ -1,5 +1,5 @@
 import os
-import yaml
+import ruamel.yaml
 import logging
 import getpass
 import keyring
@@ -37,7 +37,7 @@ SCHEMA = {
                 },
                 'email': {
                     'type': 'string',
-                    'pattern': '^[a-zA-Z0-9]+\.[a-zA-Z0-9]+\@hsr.ch$'
+                    'pattern': '^[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\@hsr.ch$'
                 }
             },
             'required': ['username', 'email']
@@ -121,7 +121,7 @@ def load_config(raise_if_incomplete=False):
 
     config = None
     with open(config_path, 'r') as f:
-        config = yaml.load(f)
+        config = ruamel.yaml.load(f, ruamel.yaml.RoundTripLoader)
 
     # Verify if the password is in the keyring
     try:
@@ -183,7 +183,7 @@ def set_password(config, password=None):
     keyring.set_password('openhsr-connect', config['login']['username'], password)
 
 
-def edit(config):
+def edit():
     editor = os.getenv('EDITOR')
     config_path = os.path.expanduser(PATH_CONFIG)
     if editor is None:

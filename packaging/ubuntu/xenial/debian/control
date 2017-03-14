@@ -1,0 +1,17 @@
+Source: openhsr-connect
+Section: utils
+Priority: optional
+Maintainer: open\HSR Pool <pool@openhsr.ch>
+Build-Depends: debhelper (>= 7),
+               python3-all (>= 3.5)
+X-Python-Version: >= 3.5
+Standards-Version: 3.9.6
+
+Package: openhsr-connect
+Architecture: all
+Section: utils
+Depends: ${misc:Depends}, ${python3:Depends}, python3-ruamel.yaml, python3-pysmb, cups
+Description: Die offene HSR-Mapper alternative!
+ Besser als der HSR Mapper ;)
+
+
