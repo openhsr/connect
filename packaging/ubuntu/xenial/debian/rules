@@ -14,10 +14,13 @@ override_dh_auto_install:
 	# Add backend script 
 	mkdir -p ${BACKEND_SCRIPT_DIR}
 	cp openhsr_connect/resources/openhsr-connect ${BACKEND_SCRIPT}
-	chmod 700 ${BACKEND_SCRIPT}
-	chown root:root ${BACKEND_SCRIPT}
-	chown root:root ${BACKEND_SCRIPT}
 
 	# Add PPD
 	mkdir -p ${PPD_FILE_DIR}
-	cp openhsr_connect/resources/Generic-PostScript_Printer-Postscript.ppd ${PPD_FILE} 
+	cp openhsr_connect/resources/Generic-PostScript_Printer-Postscript.ppd ${PPD_FILE}
+override_dh_fixperms:
+	dh_fixperms
+
+	# Set specific permissions for cups backend script
+	chown root:root ${BACKEND_SCRIPT}
+	chmod 700 ${BACKEND_SCRIPT}
