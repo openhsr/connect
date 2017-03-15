@@ -10,5 +10,6 @@ sudo dnf install openhsr-connect
 ```bash
 curl https://pool.openhsr.ch/pool@openhsr.ch.gpg.key | sudo apt-key add -
 sudo apt-add-repository https://pool.openhsr.ch/ubuntu/
-apt install openhsr-connect
+sudo apt-get update
+sudo apt-get install openhsr-connect
 ```
