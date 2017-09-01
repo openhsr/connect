@@ -1,4 +1,4 @@
-pysmb==1.1.19
+pysmb==1.1.20
 click==6.7
 ruamel.yaml==0.15.22
 keyring==10.4.0
