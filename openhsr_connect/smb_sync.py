@@ -10,7 +10,7 @@ from openhsr_connect import exceptions
 
 class SMB_Sync(sync.Sync):
 
-    SMB_SERVER_NAME = 'c206.hsr.ch'
+    SMB_SERVER_NAME = 'svm-c213.hsr.ch'
     SMB_SHARE_NAME = 'skripte'
     SMB_DOMAIN = 'HSR'
     SMB_SERVER_PORT = 445
