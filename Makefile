@@ -38,7 +38,7 @@ $(TARGETS):
 	# Build connect, dependencies and repositories
 	mkdir -p $(shell pwd)/dist/$(DISTRIBUTION)/$(VERSION)/
 	export GPG_KEY="$(GPG_KEY)" && docker run -ti --rm --name "openhsr-connect-$(DISTRIBUTION)-$(VERSION)" \
-	    --volume=$(shell pwd)/dist/$(DISTRIBUTION)/:/repo/:rw \
+		--volume=$(shell pwd)/dist/$(DISTRIBUTION)/:/repo/:z \
 	    --env GPG_KEY --env CONNECT_VERSION=$(CONNECT_VERSION) \
 	    openhsr/openhsr-connect-$(DISTRIBUTION)-$(VERSION)
 
