@@ -1,5 +1,5 @@
 pysmb==1.1.27
 click==7.0
 ruamel.yaml==0.16.5
-keyring==10.4.0
+keyring==19.2.0
 jsonschema==2.6.0
